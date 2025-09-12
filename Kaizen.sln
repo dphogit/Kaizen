@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\Kaizen.API", "src\Kaizen.API\Kaizen.API.csproj", "{07771365-85C8-4A33-B7CF-49C0B1655113}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C8135482-D62B-47BB-B167-1FDB99B79BEF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6774C860-8F0B-48B2-97C5-E892CFC1F64F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaizen.API.FunctionalTests", "test\Kaizen.API.FunctionalTests\Kaizen.API.FunctionalTests.csproj", "{D837740E-6BF2-4221-B954-2E92CC0B0314}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07771365-85C8-4A33-B7CF-49C0B1655113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07771365-85C8-4A33-B7CF-49C0B1655113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07771365-85C8-4A33-B7CF-49C0B1655113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07771365-85C8-4A33-B7CF-49C0B1655113}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D837740E-6BF2-4221-B954-2E92CC0B0314}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D837740E-6BF2-4221-B954-2E92CC0B0314}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D837740E-6BF2-4221-B954-2E92CC0B0314}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D837740E-6BF2-4221-B954-2E92CC0B0314}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{07771365-85C8-4A33-B7CF-49C0B1655113} = {C8135482-D62B-47BB-B167-1FDB99B79BEF}
+		{D837740E-6BF2-4221-B954-2E92CC0B0314} = {6774C860-8F0B-48B2-97C5-E892CFC1F64F}
+	EndGlobalSection
+EndGlobal
