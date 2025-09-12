@@ -4,6 +4,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/api-build-and-test.yml'
       - 'src/Kaizen.API/**'
       - 'test/Kaizen.API.FunctionalTests/**'
 
