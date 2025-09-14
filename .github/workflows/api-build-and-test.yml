@@ -20,6 +20,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with: 
           dotnet-version: 9.0.x
+          
+      - name: Ensure Docker is available for TestContainers
+        run: docker --version
         
       - name: Restore Dependencies
         run: dotnet restore src/Kaizen.API/Kaizen.API.csproj

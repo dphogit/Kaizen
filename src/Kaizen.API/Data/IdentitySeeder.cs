@@ -5,27 +5,34 @@ namespace Kaizen.API.Data;
 
 public static class IdentitySeeder
 {
-    private const string AdminRole = "Admin";
-
     /// <summary>
     /// Seeds the admin user in the database from the given email and password in configuration.
     /// </summary>
     /// <returns><c>true</c> if new admin user was created, otherwise <c>false</c> (admin user already exists).</returns>
-    public static async Task<bool> SeedAdminUser(IServiceProvider services, IConfiguration config)
+    public static Task<bool> SeedAdminUser(IServiceProvider services, IConfiguration config)
     {
-        var userManager = services.GetRequiredService<UserManager<KaizenUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
         var email = config["AdminUser:Email"];
         var password = config["AdminUser:Password"];
 
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             throw new InvalidOperationException("AdminUser:Email and AdminUser:Password must both be configured.");
 
-        var adminRoleExists = await roleManager.RoleExistsAsync(AdminRole);
+        return SeedAdminUser(services, email, password);
+    }
+
+    /// <summary>
+    /// Seeds the admin user in the database with the given email and password.
+    /// </summary>
+    /// <returns><c>true</c> if new admin user was created, otherwise <c>false</c> (admin user already exists).</returns>
+    public static async Task<bool> SeedAdminUser(IServiceProvider services, string email, string password)
+    {
+        var userManager = services.GetRequiredService<UserManager<KaizenUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        var adminRoleExists = await roleManager.RoleExistsAsync(RoleConstants.Admin);
 
         if (!adminRoleExists)
-            await roleManager.CreateAsync(new IdentityRole(AdminRole));
+            await roleManager.CreateAsync(new IdentityRole(RoleConstants.Admin));
 
         var existingUser = await userManager.FindByEmailAsync(email);
 
@@ -39,7 +46,8 @@ public static class IdentitySeeder
             throw new Exception(
                 $"Failed to seed admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
 
-        await userManager.AddToRoleAsync(user, AdminRole);
+        await userManager.AddToRoleAsync(user, RoleConstants.Admin);
+        
         return true;
     }
 }
