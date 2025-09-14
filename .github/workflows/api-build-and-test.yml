@@ -31,4 +31,4 @@ jobs:
         run: dotnet build src/Kaizen.API/Kaizen.API.csproj --configuration Release --no-restore
         
       - name: Run Functional Tests
-        run: dotnet test test/Kaizen.API.FunctionalTests/Kaizen.API.FunctionalTests.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test test/Kaizen.API.FunctionalTests/Kaizen.API.FunctionalTests.csproj --no-build --verbosity normal
