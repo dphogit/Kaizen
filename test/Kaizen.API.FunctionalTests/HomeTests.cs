@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Kaizen.API.FunctionalTests.Infrastructure;
 
 namespace Kaizen.API.FunctionalTests;
 
-public class HomeTests
+[Collection(nameof(ApiTestCollection))]
+public class HomeTests(ApiTestFixture fixture)
 {
     [Fact]
     public async Task Get_Home_ShouldReturnHelloWorld()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        var client = fixture.Factory.CreateClient();
         
         // Act
         var response = await client.GetAsync("/");

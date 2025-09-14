@@ -1,17 +1,24 @@
-﻿namespace Kaizen.API.Extensions;
+﻿using Kaizen.API.Data;
+using Kaizen.API.Models;
+using Microsoft.AspNetCore.Identity;
+
+namespace Kaizen.API.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    /// <summary>
-    /// Adds CORS settings for the Kaizen API based on application configuration.
-    /// Applies it as a default CORS policy which applies to all endpoints.
-    /// </summary>
-    /// <param name="builder">The web application builder to apply the CORS configuration on.</param>
-    /// <returns>The list of origins configured.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// If no configuration can be found or there are no allowed origins.
-    /// </exception>
-    public static string[] AddKaizenCors(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddKaizenServices(this WebApplicationBuilder builder)
+    {
+        builder.AddKaizenCors();
+        builder.AddKaizenDatabase();
+
+        builder.Services.AddIdentityApiEndpoints<KaizenUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<KaizenDbContext>();
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenCors(this WebApplicationBuilder builder)
     {
         var allowedOrigins = builder.Configuration.GetRequiredSection("AllowedOrigins").Get<string[]>();
 
@@ -20,6 +27,18 @@ public static class WebApplicationBuilderExtensions
 
         builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins(allowedOrigins)));
 
-        return allowedOrigins;
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenDatabase(this WebApplicationBuilder builder)
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        if (connectionString is null)
+            throw new InvalidOperationException("No connection string is configured");
+
+        builder.Services.AddSqlServer<KaizenDbContext>(connectionString);
+
+        return builder;
     }
 }

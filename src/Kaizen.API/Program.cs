@@ -2,9 +2,7 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
-var allowedOrigins = builder.AddKaizenCors();
-
-// Add services to the container.
+builder.AddKaizenServices();
 
 builder.Services.AddControllers();
 
@@ -13,7 +11,11 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Seed single admin user (me)
+await app.SeedAdminUser();
+
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -26,9 +28,6 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
-
-var logger = app.Logger;
-logger.LogInformation("Allowed CORS Origins: {Origins}", string.Join(", ", allowedOrigins));
 
 app.Run();
 
