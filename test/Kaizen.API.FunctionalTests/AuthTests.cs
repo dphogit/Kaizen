@@ -53,4 +53,28 @@ public class AuthTests(ApiTestFixture fixture)
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Login_UseCookie_SetsCookie()
+    {
+        // Arrange
+        await fixture.ResetDatabaseAsync();
+
+        var loginRequest = new LoginRequest
+        {
+            Email = TestWebApplicationFactory.TestAdminEmail,
+            Password = TestWebApplicationFactory.TestAdminPassword
+        };
+        
+        var client = fixture.Factory.CreateClient();
+        
+        // Act
+        var response = await client.PostAsJsonAsync("/auth/login?useCookies=true", loginRequest);
+        
+        // Assert
+        response.EnsureSuccessStatusCode();
+
+        var setCookie = response.Headers.GetValues("Set-Cookie");
+        Assert.Contains(setCookie, cookie => cookie.StartsWith("KaizenAuth="));
+    }
 }

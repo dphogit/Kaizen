@@ -2,7 +2,7 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddKaizenServices();
+builder.AddKaizen();
 
 builder.Services.AddControllers();
 
