@@ -27,7 +27,8 @@ app.UseCors();
 
 app.UseAuthorization();
 
-app.MapControllers();
+// All endpoints require auth, besides login which allows anonymous. 
+app.MapControllers().RequireAuthorization();
 
 app.Run();
 

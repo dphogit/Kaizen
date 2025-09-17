@@ -4,10 +4,10 @@ using Kaizen.API.FunctionalTests.Infrastructure;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity.Data;
 
-namespace Kaizen.API.FunctionalTests;
+namespace Kaizen.API.FunctionalTests.Auth;
 
 [Collection(nameof(ApiTestCollection))]
-public class AuthTests(ApiTestFixture fixture)
+public class LoginTests(ApiTestFixture fixture)
 {
     [Fact]
     public async Task Login_ValidCredentials_ReturnsAccessToken()
