@@ -8,5 +8,11 @@ export const userSchema = z.object({
   roles: roleUnion.array(),
 });
 
+export const loginSchema = z.object({
+  email: z.email(),
+  password: z.string(),
+});
+
 export type Role = z.infer<typeof roleUnion>;
 export type User = z.infer<typeof userSchema>;
+export type Login = z.infer<typeof loginSchema>;

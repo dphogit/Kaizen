@@ -46,6 +46,17 @@ public class AuthController(
         return TypedResults.Empty;
     }
 
+    [HttpPost("logout")]
+    public async Task<Ok> Logout()
+    {
+        await signInManager.SignOutAsync();
+        
+        var user = await GetUserFromContext();
+        logger.LogInformation("{Email} logged out", user.Email);
+        
+        return TypedResults.Ok();
+    }
+
     [HttpGet]
     public async Task<Results<Ok<KaizenUserDto>, InternalServerError>> Me()
     {
@@ -60,8 +71,6 @@ public class AuthController(
             Roles = roles.ToArray(),
         };
         
-        logger.LogInformation("{Email} retrieved own user data", user.Email);
-
         return TypedResults.Ok(mock);
     }
 

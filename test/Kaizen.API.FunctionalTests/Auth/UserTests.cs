@@ -7,8 +7,15 @@ using Kaizen.API.FunctionalTests.Infrastructure;
 namespace Kaizen.API.FunctionalTests.Auth;
 
 [Collection(nameof(ApiTestCollection))]
-public class UserTests(ApiTestFixture fixture)
+public class UserTests(ApiTestFixture fixture) : IAsyncLifetime
 {
+    public async Task InitializeAsync()
+    {
+        await fixture.ResetDatabaseAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+    
     [Fact]
     public async Task GetMe_NotAuthenticated_ReturnsUnauthorized()
     {

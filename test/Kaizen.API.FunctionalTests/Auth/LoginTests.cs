@@ -7,8 +7,15 @@ using Microsoft.AspNetCore.Identity.Data;
 namespace Kaizen.API.FunctionalTests.Auth;
 
 [Collection(nameof(ApiTestCollection))]
-public class LoginTests(ApiTestFixture fixture)
+public class LoginTests(ApiTestFixture fixture) : IAsyncLifetime
 {
+    public async Task InitializeAsync()
+    {
+        await fixture.ResetDatabaseAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+    
     [Fact]
     public async Task Login_ValidCredentials_ReturnsAccessToken()
     {

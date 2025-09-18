@@ -9,17 +9,13 @@
   Title,
 } from "@mantine/core";
 import { isEmail, isNotEmpty, useForm } from "@mantine/form";
-import { useLoginMutation } from "../api/login";
+import { useLoginMutation } from "../api";
 
 import classes from "./login-page.module.css";
 import { AxiosError, HttpStatusCode } from "axios";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getMe } from "@/features/auth/api/get-me.ts";
 
 function LoginPage() {
-  const queryClient = useQueryClient();
-
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm({
@@ -35,12 +31,6 @@ function LoginPage() {
 
   function handleSubmit(values: typeof form.values) {
     loginMutation.mutate(values, {
-      onSuccess: async () => {
-        await queryClient.fetchQuery({
-          queryKey: ["me"],
-          queryFn: getMe,
-        });
-      },
       onError: (error) => {
         if (error instanceof AxiosError) {
           if (error.response?.status === HttpStatusCode.Unauthorized) {
