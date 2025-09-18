@@ -1,5 +1,7 @@
-﻿using Kaizen.API.Data;
+﻿using System.Net.Http.Json;
+using Kaizen.API.Data;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,11 @@ public class TestWebApplicationFactory(string connectionString) : WebApplication
         });
     }
 
+    /// <summary>
+    /// Creates an <b>unauthenticated</b> HTTP client configured with testing defaults.
+    /// Useful for testing scenarios around authentication/authorization.
+    /// </summary>
+    /// <returns></returns>
     public new HttpClient CreateClient()
     {
         // Avoids HTTPs redirection warning in logs from HTTPs Redirection Middleware
@@ -40,5 +47,25 @@ public class TestWebApplicationFactory(string connectionString) : WebApplication
         };
         
         return base.CreateClient(options);
+    }
+
+    /// <summary>
+    /// Creates an <b>authenticated</b> HTTP client with the user <b>admin</b> role.
+    /// </summary>
+    /// <returns></returns>
+    public HttpClient CreateAdminClient()
+    {
+        var client = CreateClient();
+        
+        var loginRequest = new LoginRequest
+        {
+            Email = TestAdminEmail,
+            Password = TestAdminPassword
+        };
+
+        var response = client.PostAsJsonAsync("/auth/login?useCookies=true", loginRequest).Result;
+        response.EnsureSuccessStatusCode();
+        
+        return client;
     }
 }
