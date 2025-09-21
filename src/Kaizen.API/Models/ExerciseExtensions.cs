@@ -15,4 +15,9 @@ public static class ExerciseExtensions
             UpdatedAt = exercise.UpdatedAt,
         };
     }
+
+    public static IEnumerable<ExerciseDto> ToExerciseDtos(this IEnumerable<Exercise> exercises)
+    {
+        return exercises.Select(ToExerciseDto);
+    }
 }

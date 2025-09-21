@@ -9,4 +9,10 @@ public static class FakeCreateExerciseDto
         Name = "Bench Press",
         MuscleGroupCodes = ["chest", "shoulders", "triceps"]
     };
+
+    public static CreateExerciseDto RomanianDeadlift => new()
+    {
+        Name = "Romanian Deadlift",
+        MuscleGroupCodes = ["hamstrings", "glutes", "lower_back"]
+    };
 }

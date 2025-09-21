@@ -50,6 +50,13 @@ public class ExercisesController(
         return TypedResults.Created(location, exercise.ToExerciseDto());
     }
 
+    [HttpGet]
+    public async Task<Ok<ExerciseDto[]>> GetExercises()
+    {
+        var exercises = await exerciseService.GetExercisesAsync();
+        return TypedResults.Ok(exercises.ToExerciseDtos().ToArray());
+    }
+
     [HttpGet("{id:int}")]
     public async Task<Results<Ok<ExerciseDto>, ProblemHttpResult>> GetExercise(int id)
     {

@@ -30,6 +30,46 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetExercises_Authenticated_ReturnsAllExercises()
+    {
+        // Arrange
+        var benchPress = await CreateExercise(FakeCreateExerciseDto.BenchPress);
+        var romanianDeadlift = await CreateExercise(FakeCreateExerciseDto.RomanianDeadlift);
+        
+        var client = fixture.Factory.CreateAuthenticatedClient();
+        
+        // Act
+        var response = await client.GetAsync("/exercises");
+        
+        // Assert
+        response.EnsureSuccessStatusCode();
+        
+        var exercises = await response.Content.ReadFromJsonAsync<ExerciseDto[]>();
+        Assert.NotNull(exercises);
+        
+        Assert.Equal(2, exercises.Length);
+
+        var benchPressDto = Assert.Single(exercises, e => e.Name == benchPress.Name);
+        ExerciseAssertions.Equal(benchPressDto, benchPress);
+        
+        var rdlDto = Assert.Single(exercises, e => e.Name == romanianDeadlift.Name);
+        ExerciseAssertions.Equal(rdlDto, romanianDeadlift);
+    }
+
+    [Fact]
+    public async Task GetExercises_Unauthenticated_ReturnsUnauthorized()
+    {
+        // Arrange
+        var client = fixture.Factory.CreateClient();
+        
+        // Act
+        var response = await client.GetAsync("/exercises");
+        
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task GetExerciseById_Existing_ReturnsExercise()
     {
         // Arrange
@@ -45,10 +85,7 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
         var exercise = await response.Content.ReadFromJsonAsync<ExerciseDto>();
         Assert.NotNull(exercise);
         
-        Assert.Equal(benchPress.Id, exercise.Id);
-        Assert.Equal(benchPress.Name, exercise.Name);
-        Assert.Equal(benchPress.MuscleGroups.Count, exercise.MuscleGroups.Count);
-        Assert.All(benchPress.MuscleGroups, mgDto => Assert.Contains(mgDto, exercise.MuscleGroups));
+        ExerciseAssertions.Equal(exercise, benchPress);
     }
 
     [Fact]

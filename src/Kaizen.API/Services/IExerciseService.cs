@@ -8,4 +8,6 @@ public interface IExerciseService
     public Task<Result<Exercise>> CreateExerciseAsync(string name, IEnumerable<string> muscleGroupCodes);
 
     public Task<Exercise?> GetExerciseAsync(int id);
+
+    public Task<IList<Exercise>> GetExercisesAsync();
 }

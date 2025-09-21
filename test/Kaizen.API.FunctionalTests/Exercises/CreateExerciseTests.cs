@@ -54,19 +54,17 @@ public class CreateExerciseTests(ApiTestFixture fixture) : IAsyncLifetime
         
         // Assert - POST response header/body and can GET from location (how a client would interact with the API)
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
+        
         var exercise = await response.Content.ReadFromJsonAsync<ExerciseDto>();
         Assert.NotNull(exercise);
-        Assert.Equal(exercise.Name, benchPressRequest.Name);
-        Assert.Equal(benchPressRequest.MuscleGroupCodes.Count, exercise.MuscleGroups.Count);
-        Assert.All(exercise.MuscleGroups, mgDto => Assert.Contains(mgDto.Code, benchPressRequest.MuscleGroupCodes));
         Assert.Equal($"/exercises/{exercise.Id}", response.Headers.Location?.ToString());
+        ExerciseAssertions.Equal(exercise, benchPressRequest);
         
-        exercise = await client.GetFromJsonAsync<ExerciseDto>($"/exercises/{exercise.Id}");
+        response = await client.GetAsync($"/exercises/{exercise.Id}");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        exercise = await response.Content.ReadFromJsonAsync<ExerciseDto>();
         Assert.NotNull(exercise);
-        Assert.Equal(exercise.Name, benchPressRequest.Name);
-        Assert.Equal(benchPressRequest.MuscleGroupCodes.Count, exercise.MuscleGroups.Count);
-        Assert.All(exercise.MuscleGroups, mgDto => Assert.Contains(mgDto.Code, benchPressRequest.MuscleGroupCodes));
+        ExerciseAssertions.Equal(exercise, benchPressRequest);
     }
 
     [Fact]

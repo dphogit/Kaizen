@@ -63,4 +63,13 @@ public class ExerciseService(KaizenDbContext dbContext) : IExerciseService
         
         return exercise;
     }
+
+    public async Task<IList<Exercise>> GetExercisesAsync()
+    {
+        var exercises = await dbContext.Exercises
+            .Include(e => e.MuscleGroups)
+            .ToListAsync();
+        
+        return exercises;
+    }
 }
