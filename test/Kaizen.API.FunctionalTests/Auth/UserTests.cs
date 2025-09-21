@@ -47,6 +47,6 @@ public class UserTests(ApiTestFixture fixture) : IAsyncLifetime
         Assert.Equal(TestWebApplicationFactory.TestAdminEmail, kaizenUserDto.Email);
         
         Assert.Single(kaizenUserDto.Roles);
-        Assert.Equal(RoleConstants.Admin, kaizenUserDto.Roles[0]);
+        Assert.Equal(AuthConstants.Roles.Admin, kaizenUserDto.Roles[0]);
     }
 }

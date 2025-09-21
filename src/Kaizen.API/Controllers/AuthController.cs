@@ -1,4 +1,5 @@
 ﻿using Kaizen.API.Contracts;
+using Kaizen.API.Middleware;
 using Kaizen.API.Models;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authorization;
@@ -49,18 +50,18 @@ public class AuthController(
     [HttpPost("logout")]
     public async Task<Ok> Logout()
     {
+        var user = HttpContext.GetCurrentUser();
+        
         await signInManager.SignOutAsync();
         
-        var user = await GetUserFromContext();
         logger.LogInformation("{Email} logged out", user.Email);
-        
         return TypedResults.Ok();
     }
 
     [HttpGet]
     public async Task<Results<Ok<KaizenUserDto>, InternalServerError>> Me()
     {
-        var user = await GetUserFromContext();
+        var user = HttpContext.GetCurrentUser();
         
         var roles = await userManager.GetRolesAsync(user);
         
@@ -72,17 +73,5 @@ public class AuthController(
         };
         
         return TypedResults.Ok(mock);
-    }
-
-    private async Task<KaizenUser> GetUserFromContext()
-    {
-        var user = await userManager.GetUserAsync(User);
-
-        if (user is null)
-        {
-            throw new InvalidOperationException("Could not find user for given authenticated context");
-        }
-        
-        return user;
     }
 }

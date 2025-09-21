@@ -25,6 +25,10 @@ public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : Identi
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<Exercise>()
+            .HasIndex(e => e.Name)
+            .IsUnique();
 
         modelBuilder.Entity<MuscleGroup>(m =>
         {

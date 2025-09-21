@@ -1,5 +1,6 @@
 ﻿using Kaizen.API.Data;
 using Kaizen.API.Models;
+using Kaizen.API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Net.Http.Headers;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -10,11 +11,10 @@ public static class WebApplicationBuilderExtensions
 {
     public static WebApplicationBuilder AddKaizen(this WebApplicationBuilder builder)
     {
-        builder.AddKaizenCors();
-        builder.AddKaizenDatabase();
-        builder.AddKaizenAuth();
-
-        return builder;
+        return builder.AddKaizenCors()
+            .AddKaizenDatabase()
+            .AddKaizenAuth()
+            .AddKaizenServices();
     }
 
     private static WebApplicationBuilder AddKaizenCors(this WebApplicationBuilder builder)
@@ -62,6 +62,19 @@ public static class WebApplicationBuilderExtensions
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         });
 
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(AuthConstants.Policies.RequireAdminRole, policyBuilder =>
+            {
+                policyBuilder.RequireRole(AuthConstants.Roles.Admin);
+            });
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenServices(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IExerciseService, ExerciseService>();
+        
         return builder;
     }
 }

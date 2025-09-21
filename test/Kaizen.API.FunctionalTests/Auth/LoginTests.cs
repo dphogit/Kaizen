@@ -20,8 +20,6 @@ public class LoginTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task Login_ValidCredentials_ReturnsAccessToken()
     {
         // Arrange
-        await fixture.ResetDatabaseAsync();
-        
         var loginRequest = new LoginRequest
         {
             Email = TestWebApplicationFactory.TestAdminEmail,
@@ -44,8 +42,6 @@ public class LoginTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task Login_InvalidPassword_ReturnsUnauthorized()
     {
         // Arrange
-        await fixture.ResetDatabaseAsync();
-
         var loginRequest = new LoginRequest
         {
             Email = TestWebApplicationFactory.TestAdminEmail,

@@ -1,8 +1,15 @@
 ﻿using Kaizen.API.Extensions;
+using Kaizen.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddKaizen();
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 
 builder.Services.AddControllers();
 
@@ -26,6 +33,8 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 app.UseAuthorization();
+
+app.UseCurrentUserMiddleware();
 
 // All endpoints require auth, besides login which allows anonymous. 
 app.MapControllers().RequireAuthorization();

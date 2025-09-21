@@ -21,6 +21,8 @@ public class ApiTestFixture : IAsyncLifetime
 
     private string _connectionString = null!;
 
+    private DbContextOptions<KaizenDbContext> _dbContextOptions = null!;
+
     public TestWebApplicationFactory Factory { get; private set; } = null!;
 
     public async Task InitializeAsync()
@@ -44,12 +46,12 @@ public class ApiTestFixture : IAsyncLifetime
         var builder = new SqlConnectionStringBuilder(masterConnectionString) { InitialCatalog = Database };
         _connectionString = builder.ConnectionString;
 
-        var dbContextOptions = new DbContextOptionsBuilder<KaizenDbContext>()
+        _dbContextOptions = new DbContextOptionsBuilder<KaizenDbContext>()
             .UseSqlServer(_connectionString)
             .Options;
 
         // Recreate the test DB with the schema defined by the EF model.
-        await using (var context = new KaizenDbContext(dbContextOptions))
+        await using (var context = new KaizenDbContext(_dbContextOptions))
         {
             await context.Database.EnsureDeletedAsync();
             await context.Database.EnsureCreatedAsync();
@@ -67,13 +69,24 @@ public class ApiTestFixture : IAsyncLifetime
     public async Task ResetDatabaseAsync()
     {
         await _respawner.ResetAsync(_connectionString);
-        await ReseedAdminUserAsync();
+        await Reseed();
     }
 
     public async Task DisposeAsync()
     {
         await _msSql.DisposeAsync();
         await Factory.DisposeAsync();
+    }
+
+    private async Task Reseed()
+    {
+        await using (var context = new KaizenDbContext(_dbContextOptions))
+        {
+            // The DB should be cleared, but still exist - the schema is created, and seeding is performed.
+            await context.Database.EnsureCreatedAsync();
+        }
+        
+        await ReseedAdminUserAsync();
     }
 
     private async Task ReseedAdminUserAsync()
