@@ -55,6 +55,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logout,
     onSuccess: () =>
+      // Refetching once logged out will re-render to the login screen
       queryClient.invalidateQueries({
         queryKey: authQueryKeys.me,
       }),
