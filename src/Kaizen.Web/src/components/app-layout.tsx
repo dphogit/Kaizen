@@ -1,107 +1,30 @@
-﻿import {
-  AppShell,
-  Button,
-  Group,
-  Menu,
-  NavLink as MantineNavLink,
-  Stack,
-  Text,
-  Title,
-  useMantineTheme,
-} from "@mantine/core";
-import {
-  IconBarbell,
-  IconChevronDown,
-  IconHome,
-  IconLogout,
-  IconUser,
-} from "@tabler/icons-react";
+﻿import { AppShell, Button, Container, Group, Menu, Title } from "@mantine/core";
+import { IconChevronDown, IconLogout, IconUser } from "@tabler/icons-react";
 import { useMeContext } from "@/features/auth/stores/me-context";
 import { useLogoutMutation } from "@/features/auth/api";
 import { notifications } from "@mantine/notifications";
 import { NavLink as ReactRouterNavLink, Outlet } from "react-router";
 import { AppRoutes } from "../routes";
-import * as React from "react";
+import type { ReactNode } from "react";
 
-const HEADER_HEIGHT = 60;
-const SIDENAV_WIDTH = 270;
-
-export default function AppLayout() {
-  const me = useMeContext();
-  const theme = useMantineTheme();
-
-  const isAdmin = me.roles.includes("Admin");
-
+function PageContainer(props: { children: ReactNode }) {
   return (
-    <AppShell
-      header={{ height: HEADER_HEIGHT }}
-      navbar={{ width: SIDENAV_WIDTH, breakpoint: "xs" }}
-      padding="xl"
-      layout="alt"
-    >
-      <AppShell.Header>
-        <Group h="100%" px="xl" justify="flex-end">
-          <UserMenu />
-        </Group>
-      </AppShell.Header>
-
-      <AppShell.Navbar>
-        <AppShell.Section
-          h={HEADER_HEIGHT}
-          style={{
-            borderBottomWidth: "1px",
-            borderBottomStyle: "solid",
-            borderBottomColor: theme.colors.gray[3],
-          }}
-        >
-          <Stack h="100%" align="flex-start" justify="center" px="md">
-            <Title>Kaizen🔥</Title>
-          </Stack>
-        </AppShell.Section>
-
-        <AppShell.Section>
-          <NavItem
-            to={AppRoutes.Home}
-            label="Home"
-            leftSection={<IconHome size={20} stroke={2} />}
-          />
-          {isAdmin && <AdminNavigation />}
-        </AppShell.Section>
-      </AppShell.Navbar>
-
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+    <Container maw="1280px" px="xl" h="100%">
+      {props.children}
+    </Container>
   );
 }
 
-function AdminNavigation() {
+function PageLink(props: { to: string; children: ReactNode }) {
   return (
-    <NavItem
-      to={AppRoutes.Exercises}
-      label="Manage Exercises"
-      leftSection={<IconBarbell size={20} stroke={2} />}
-    />
-  );
-}
-
-type NavItemProps = {
-  to: string;
-  label: React.ReactNode;
-  leftSection?: React.ReactNode;
-};
-
-function NavItem(props: NavItemProps) {
-  return (
-    <MantineNavLink
-      component={ReactRouterNavLink}
+    <Button
+      variant="transparent"
       to={props.to}
-      label={<Text pl={4}>{props.label}</Text>}
-      leftSection={props.leftSection}
-      py="sm"
-      px="md"
-    />
+      component={ReactRouterNavLink}
+      color="white"
+    >
+      {props.children}
+    </Button>
   );
 }
 
@@ -128,8 +51,9 @@ function UserMenu() {
       <Menu.Target>
         <Button
           radius="sm"
-          variant="default"
-          rightSection={<IconChevronDown size={14} />}
+          variant="transparent"
+          rightSection={<IconChevronDown size={14} stroke={3} />}
+          color="white"
         >
           {me.email}
         </Button>
@@ -148,5 +72,50 @@ function UserMenu() {
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>
+  );
+}
+
+export default function AppLayout() {
+  const me = useMeContext();
+
+  const isAdmin = me.roles.includes("Admin");
+
+  return (
+    <AppShell
+      styles={{
+        header: {
+          backgroundColor: "var(--mantine-color-dark-6)",
+        },
+        main: {
+          backgroundColor: "var(--mantine-color-gray-1)",
+        },
+      }}
+      header={{ height: 72 }}
+      padding="xl"
+      layout="alt"
+    >
+      <AppShell.Header>
+        <PageContainer>
+          <Group h="100%" justify="space-between">
+            <Group gap={0}>
+              <Title mr="md" c="white">
+                Kaizen🔥
+              </Title>
+              <PageLink to={AppRoutes.Home}>Home</PageLink>
+              {isAdmin && (
+                <PageLink to={AppRoutes.Exercises}>Exercises</PageLink>
+              )}
+            </Group>
+            <UserMenu />
+          </Group>
+        </PageContainer>
+      </AppShell.Header>
+
+      <AppShell.Main>
+        <PageContainer>
+          <Outlet />
+        </PageContainer>
+      </AppShell.Main>
+    </AppShell>
   );
 }

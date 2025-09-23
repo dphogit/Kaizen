@@ -5,7 +5,7 @@ import { AxiosError, HttpStatusCode } from "axios";
 
 export const authQueryKeys = {
   me: ["me"] as const,
-};
+} as const;
 
 export async function getMe() {
   const response = await apiClient.get("/auth");

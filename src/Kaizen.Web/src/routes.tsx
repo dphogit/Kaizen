@@ -1,15 +1,12 @@
 ﻿import { Route, Routes } from "react-router";
 import AppLayout from "./components/app-layout";
 import { useMeContext } from "./features/auth/stores/me-context";
+import ExercisesPage from "./features/exercises/components/exercises-page";
 
 function HomePage() {
   const me = useMeContext();
 
   return <div>{JSON.stringify(me, null, 2)}</div>;
-}
-
-function ExercisePage() {
-  return <p>Exercises Management Page</p>;
 }
 
 export const AppRoutes = {
@@ -27,7 +24,7 @@ export function AuthenticatedRoutes() {
       <Route element={<AppLayout />}>
         <Route index element={<HomePage />} />
         {isAdmin && (
-          <Route path={AppRoutes.Exercises} element={<ExercisePage />} />
+          <Route path={AppRoutes.Exercises} element={<ExercisesPage />} />
         )}
       </Route>
       {/* TODO Page not found */}
