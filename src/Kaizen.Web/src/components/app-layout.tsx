@@ -84,7 +84,7 @@ export default function AppLayout() {
     <AppShell
       styles={{
         header: {
-          backgroundColor: "var(--mantine-color-dark-6)",
+          backgroundColor: "var(--mantine-primary-color-filled)",
         },
         main: {
           backgroundColor: "var(--mantine-color-gray-1)",

@@ -1,5 +1,7 @@
-﻿using Kaizen.API.Extensions;
+﻿using Kaizen.API.Configuration;
+using Kaizen.API.Extensions;
 using Kaizen.API.Middleware;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,11 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseQueryStrings = true;
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    var toKebabCaseConvention = new RouteTokenTransformerConvention(new ToKebabParameterTransformer());
+    options.Conventions.Add(toKebabCaseConvention);
+});
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

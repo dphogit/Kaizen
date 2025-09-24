@@ -42,7 +42,7 @@ public static class DbContextExtensions
     }
     
     // https://www.muscleandstrength.com/exercises
-    private static readonly List<MuscleGroup> DefaultMuscleGroups =
+    public static readonly List<MuscleGroup> DefaultMuscleGroups =
     [
         // Core
         new() { Code = "abductors", Name = "Abductors" },
