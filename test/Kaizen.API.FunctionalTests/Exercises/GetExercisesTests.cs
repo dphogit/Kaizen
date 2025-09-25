@@ -7,36 +7,20 @@ using Kaizen.API.FunctionalTests.Infrastructure;
 namespace Kaizen.API.FunctionalTests.Exercises;
 
 [Collection(nameof(ApiTestCollection))]
-public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
+public class GetExercisesTests : BaseExerciseTests
 {
-    public async Task InitializeAsync()
+    public GetExercisesTests(ApiTestFixture fixture) : base(fixture)
     {
-        await fixture.ResetDatabaseAsync();
-    }
-
-    public Task DisposeAsync() => Task.CompletedTask;
-
-    private async Task<ExerciseDto> CreateExercise(CreateExerciseDto request)
-    {
-        using var client = fixture.Factory.CreateAdminClient();
-
-        var response = await client.PostAsJsonAsync("/exercises", request);
-        response.EnsureSuccessStatusCode();
-        
-        var exercise = await response.Content.ReadFromJsonAsync<ExerciseDto>();
-        Assert.NotNull(exercise);
-        
-        return exercise;
     }
 
     [Fact]
     public async Task GetExercises_Authenticated_ReturnsAllExercises()
     {
         // Arrange
-        var benchPress = await CreateExercise(FakeCreateExerciseDto.BenchPress);
-        var romanianDeadlift = await CreateExercise(FakeCreateExerciseDto.RomanianDeadlift);
+        var benchPress = await CreateExercise(ExerciseFakes.UpsertBenchPress);
+        var romanianDeadlift = await CreateExercise(ExerciseFakes.UpsertRomanianDeadlift);
         
-        var client = fixture.Factory.CreateAuthenticatedClient();
+        var client = Fixture.Factory.CreateAuthenticatedClient();
         
         // Act
         var response = await client.GetAsync("/exercises");
@@ -60,7 +44,7 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task GetExercises_Unauthenticated_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.Factory.CreateClient();
+        var client = Fixture.Factory.CreateClient();
         
         // Act
         var response = await client.GetAsync("/exercises");
@@ -73,9 +57,9 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task GetExerciseById_Existing_ReturnsExercise()
     {
         // Arrange
-        var benchPress = await CreateExercise(FakeCreateExerciseDto.BenchPress);
+        var benchPress = await CreateExercise(ExerciseFakes.UpsertBenchPress);
         
-        var client = fixture.Factory.CreateAuthenticatedClient();
+        var client = Fixture.Factory.CreateAuthenticatedClient();
         
         // Act
         var response = await client.GetAsync($"/exercises/{benchPress.Id}");
@@ -92,7 +76,7 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task GetExerciseById_NotExist_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.Factory.CreateAuthenticatedClient();
+        var client = Fixture.Factory.CreateAuthenticatedClient();
         
         // Act
         var response = await client.GetAsync($"/exercises/1");
@@ -105,7 +89,7 @@ public class GetExercisesTests(ApiTestFixture fixture) : IAsyncLifetime
     public async Task GetExerciseById_NotAuthenticated_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.Factory.CreateClient();
+        var client = Fixture.Factory.CreateClient();
         
         // Act
         var response = await client.GetAsync("/exercises/1");

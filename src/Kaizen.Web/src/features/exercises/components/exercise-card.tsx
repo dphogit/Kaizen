@@ -11,7 +11,7 @@ export default function ExerciseCard(props: ExerciseCardProps) {
     <Paper>
       <Group justify="space-between" align="center">
         <Text size="24px">{props.exercise.name}</Text>
-        <EditExerciseAction />
+        <EditExerciseAction exercise={props.exercise} />
       </Group>
       <Group gap="xs" mt="sm">
         {props.exercise.muscleGroups.map((mg) => (

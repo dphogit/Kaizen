@@ -9,9 +9,9 @@ public record ExerciseDto : TimestampedDto
 
 public static class ExerciseDtoExtensions
 {
-    public static CreateExerciseDto ToCreateDto(this ExerciseDto exerciseDto)
+    public static UpsertExerciseDto ToUpsertDto(this ExerciseDto exerciseDto)
     {
-        return new CreateExerciseDto
+        return new UpsertExerciseDto
         {
             Name = exerciseDto.Name,
             MuscleGroupCodes = exerciseDto.MuscleGroups.Select(m => m.Code).ToList(),

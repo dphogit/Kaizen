@@ -7,17 +7,7 @@ export default function ExercisesPageHeader() {
 
   return (
     <>
-      <Modal
-        opened={opened}
-        onClose={close}
-        title="Add an Exercise"
-        size="lg"
-        styles={{
-          title: {
-            fontSize: "var(--mantine-font-size-xl)",
-          },
-        }}
-      >
+      <Modal opened={opened} onClose={close} title="Add an Exercise">
         <ExerciseForm onSaveSuccess={close} />
       </Modal>
 

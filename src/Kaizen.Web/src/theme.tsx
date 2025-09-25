@@ -1,10 +1,20 @@
 ﻿import type { ReactNode } from "react";
-import { createTheme, MantineProvider, Paper } from "@mantine/core";
+import { createTheme, MantineProvider, Modal, Paper } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
 export const theme = createTheme({
   defaultRadius: "sm",
   components: {
+    Modal: Modal.extend({
+      defaultProps: {
+        size: "lg",
+        styles: {
+          title: {
+            fontSize: "var(--mantine-font-size-xl)",
+          },
+        },
+      },
+    }),
     Paper: Paper.extend({
       defaultProps: {
         p: "md",

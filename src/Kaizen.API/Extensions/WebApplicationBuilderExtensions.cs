@@ -28,7 +28,7 @@ public static class WebApplicationBuilderExtensions
         {
             options.AddDefaultPolicy(policy => policy
                 .WithOrigins(allowedOrigins)
-                .WithMethods("GET", "POST")
+                .WithMethods("GET", "POST", "PUT")
                 .WithHeaders(HeaderNames.ContentType, HeaderNames.Authorization)
                 .AllowCredentials());
         });

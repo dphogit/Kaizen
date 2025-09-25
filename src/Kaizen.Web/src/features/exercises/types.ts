@@ -5,7 +5,7 @@ export const muscleGroupSchema = z.object({
   name: z.string(),
 });
 
-export const createExerciseSchema = z.object({
+export const upsertExerciseSchema = z.object({
   name: z.string(),
   muscleGroupCodes: z.string().array(),
 });
@@ -17,5 +17,5 @@ export const exerciseSchema = z.object({
 });
 
 export type MuscleGroup = z.infer<typeof muscleGroupSchema>;
-export type CreateExercise = z.infer<typeof createExerciseSchema>;
+export type UpsertExercise = z.infer<typeof upsertExerciseSchema>;
 export type Exercise = z.infer<typeof exerciseSchema>;

@@ -1,12 +1,13 @@
 ﻿import apiClient from "@/lib/api-client";
 import {
-  type CreateExercise,
+  type UpsertExercise,
   exerciseSchema,
   muscleGroupSchema,
+  type Exercise,
 } from "./types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-const exerciseQueryKeys = {
+export const exerciseQueryKeys = {
   all: ["exercises"],
   muscleGroups: ["muscle-groups"],
 } as const;
@@ -23,7 +24,7 @@ export function useExercisesQuery() {
   });
 }
 
-export async function createExercise(exercise: CreateExercise) {
+export async function createExercise(exercise: UpsertExercise) {
   const response = await apiClient.post("/exercises", exercise);
   return exerciseSchema.parse(response.data);
 }
@@ -33,10 +34,29 @@ export function useExerciseMutation() {
 
   return useMutation({
     mutationFn: createExercise,
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: exerciseQueryKeys.all,
-      }),
+    onSuccess: (newExercise) => {
+      const updater = (prev: Exercise[]) => [...prev, newExercise];
+      queryClient.setQueryData(exerciseQueryKeys.all, updater);
+    },
+  });
+}
+
+async function editExercise(req: { id: number; payload: UpsertExercise }) {
+  const response = await apiClient.put(`/exercises/${req.id}`, req.payload);
+  return exerciseSchema.parse(response.data);
+}
+
+export function useEditExerciseMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editExercise,
+    onSuccess: (updatedExercise) => {
+      const updater = (prev: Exercise[]) =>
+        prev.map((e) => (e.id === updatedExercise.id ? updatedExercise : e));
+
+      queryClient.setQueryData(exerciseQueryKeys.all, updater);
+    },
   });
 }
 

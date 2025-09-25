@@ -103,7 +103,7 @@ export default function AppLayout() {
               </Title>
               <PageLink to={AppRoutes.Home}>Home</PageLink>
               {isAdmin && (
-                <PageLink to={AppRoutes.Exercises}>Exercises</PageLink>
+                <PageLink to={AppRoutes.Exercises}>Manage Exercises</PageLink>
               )}
             </Group>
             <UserMenu />

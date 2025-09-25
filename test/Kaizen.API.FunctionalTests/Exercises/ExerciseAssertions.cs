@@ -6,14 +6,14 @@ public static class ExerciseAssertions
 {
     public static void Equal(ExerciseDto expected, ExerciseDto actual)
     {
-        Equal(expected, actual.ToCreateDto());
+        Equal(expected, actual.ToUpsertDto());
         
         Assert.Equal(expected.Id, actual.Id);
         Assert.Equal(expected.CreatedAt, actual.CreatedAt);
         Assert.Equal(expected.UpdatedAt, actual.UpdatedAt);
     }
 
-    public static void Equal(ExerciseDto expected, CreateExerciseDto actual)
+    public static void Equal(ExerciseDto expected, UpsertExerciseDto actual)
     {
         Assert.Equal(expected.Name, actual.Name);
         
