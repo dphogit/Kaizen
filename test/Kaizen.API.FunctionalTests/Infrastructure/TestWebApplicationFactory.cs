@@ -1,7 +1,6 @@
-﻿using System.Net.Http.Json;
-using Kaizen.API.Data;
+﻿using Kaizen.API.Data;
+using Kaizen.API.FunctionalTests.Extensions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +9,11 @@ namespace Kaizen.API.FunctionalTests.Infrastructure;
 
 public class TestWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>
 {
-    public const string TestAdminEmail = "test@kaizen.com";
-    public const string TestAdminPassword = "KaizenTest123!";
+    public const string TestAdminEmail = "testadmin@kaizen.com";
+    public const string TestAdminPassword = "KaizenAdmin123!";
+
+    public const string TestEmail = "testuser@kaizen.com";
+    public const string TestPassword = "KaizenUser123!";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -50,6 +52,24 @@ public class TestWebApplicationFactory(string connectionString) : WebApplication
     }
 
     /// <summary>
+    /// Creates an <b>authenticated</b> HTTP client with normal user permissions.
+    /// </summary>
+    /// <returns></returns>
+    public HttpClient CreateAuthenticatedClient()
+    {
+        var client = CreateClient();
+
+        using (var scope = Services.CreateScope())
+        {
+            IdentitySeeder.SeedUser(scope.ServiceProvider, TestEmail, TestPassword).Wait();
+        }
+
+        client.Login(TestEmail, TestPassword);
+        
+        return client;
+    }
+
+    /// <summary>
     /// Creates an <b>authenticated</b> HTTP client with the user <b>admin</b> role.
     /// </summary>
     /// <returns></returns>
@@ -57,14 +77,7 @@ public class TestWebApplicationFactory(string connectionString) : WebApplication
     {
         var client = CreateClient();
         
-        var loginRequest = new LoginRequest
-        {
-            Email = TestAdminEmail,
-            Password = TestAdminPassword
-        };
-
-        var response = client.PostAsJsonAsync("/auth/login?useCookies=true", loginRequest).Result;
-        response.EnsureSuccessStatusCode();
+        client.Login(TestAdminEmail, TestAdminPassword);
         
         return client;
     }

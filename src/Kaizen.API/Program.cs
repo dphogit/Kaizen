@@ -1,10 +1,23 @@
-﻿using Kaizen.API.Extensions;
+﻿using Kaizen.API.Configuration;
+using Kaizen.API.Extensions;
+using Kaizen.API.Middleware;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddKaizen();
 
-builder.Services.AddControllers();
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
+
+builder.Services.AddControllers(options =>
+{
+    var toKebabCaseConvention = new RouteTokenTransformerConvention(new ToKebabParameterTransformer());
+    options.Conventions.Add(toKebabCaseConvention);
+});
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -26,6 +39,8 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 app.UseAuthorization();
+
+app.UseCurrentUserMiddleware();
 
 // All endpoints require auth, besides login which allows anonymous. 
 app.MapControllers().RequireAuthorization();

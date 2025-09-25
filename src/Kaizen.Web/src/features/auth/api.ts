@@ -5,7 +5,7 @@ import { AxiosError, HttpStatusCode } from "axios";
 
 export const authQueryKeys = {
   me: ["me"] as const,
-};
+} as const;
 
 export async function getMe() {
   const response = await apiClient.get("/auth");
@@ -55,6 +55,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logout,
     onSuccess: () =>
+      // Refetching once logged out will re-render to the login screen
       queryClient.invalidateQueries({
         queryKey: authQueryKeys.me,
       }),
