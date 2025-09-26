@@ -8,17 +8,27 @@ namespace Kaizen.API.Data;
 public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : IdentityDbContext<KaizenUser>(options)
 {
     public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<Workout> Workouts { get; set; }
+    public DbSet<WorkoutSet> WorkoutSets { get; set; }
+    
+    // Static reference data
     public DbSet<MuscleGroup> MuscleGroups { get; set; }
+    public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
 
         optionsBuilder
-            .UseSeeding((dbContext, _) => { dbContext.SeedMuscleGroups(); })
+            .UseSeeding((dbContext, _) =>
+            {
+                dbContext.SeedMuscleGroups();
+                dbContext.SeedMeasurementUnits();
+            })
             .UseAsyncSeeding(async (dbContext, _, cancellationToken) =>
             {
                 await dbContext.SeedMuscleGroupsAsync(cancellationToken);
+                await dbContext.SeedMeasurementUnitsAsync(cancellationToken);
             });
     }
 
@@ -44,8 +54,32 @@ public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : Identi
             .UsingEntity<ExerciseMuscleGroup>(join => join
                 .HasOne<MuscleGroup>()
                 .WithMany()
-                .HasForeignKey(nameof(ExerciseMuscleGroup.MuscleGroupCode))
-                .HasPrincipalKey(nameof(MuscleGroup.Code)));
+                .HasForeignKey(emg => emg.MuscleGroupCode)
+                .HasPrincipalKey(mg => mg.Code));
+
+        modelBuilder.Entity<MeasurementUnit>(e =>
+        {
+            e.HasKey(mu => mu.Code);
+            e.HasIndex(mu => mu.Name).IsUnique();
+        });
+        
+        modelBuilder.Entity<WorkoutSet>(e =>
+        {
+            e.Property(ws => ws.Quantity).HasColumnType("decimal(6,2)");
+            
+            // When exercises and unit entities are deleted (which the app doesn't allow anyway),
+            // they can only be done so if there are no workout sets referencing the entities (RESTRICT).
+
+            e.HasOne<MeasurementUnit>(ws => ws.MeasurementUnit)
+                .WithMany()
+                .HasForeignKey(w => w.MeasurementUnitCode)
+                .HasPrincipalKey(mu => mu.Code)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne<Exercise>(ws => ws.Exercise)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 
     public override int SaveChanges()

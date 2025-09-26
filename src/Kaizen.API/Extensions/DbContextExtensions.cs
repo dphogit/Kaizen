@@ -34,15 +34,50 @@ public static class DbContextExtensions
         return dbContext;
     }
 
+    public static DbContext SeedMeasurementUnits(this DbContext dbContext)
+    {
+        var toAdd = GetMeasurementUnitsToAdd(dbContext);
+
+        if (toAdd.Count > 0)
+        {
+            dbContext.AddRange(toAdd);
+            dbContext.SaveChanges();
+        }
+        
+        return dbContext;
+    }
+
+    public static async Task<DbContext> SeedMeasurementUnitsAsync(
+        this DbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var toAdd = GetMeasurementUnitsToAdd(dbContext);
+
+        if (toAdd.Count > 0)
+        {
+            await dbContext.AddRangeAsync(toAdd, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        
+        return dbContext;
+    }
+
+    private static List<MeasurementUnit> GetMeasurementUnitsToAdd(this DbContext dbContext)
+    {
+        var dbCodes = dbContext.Set<MeasurementUnit>().Select(mu => mu.Code);
+        var toAdd = AppMeasurementUnits.ExceptBy(dbCodes, mu => mu.Code);
+        return toAdd.ToList();
+    }
+
     private static List<MuscleGroup> GetMusclesGroupToAdd(DbContext dbContext)
     {
         var dbCodes = dbContext.Set<MuscleGroup>().Select(x => x.Code);
-        var toAdd = DefaultMuscleGroups.ExceptBy(dbCodes, m => m.Code).ToList();
+        var toAdd = AppMuscleGroups.ExceptBy(dbCodes, m => m.Code).ToList();
         return toAdd;
     }
     
     // https://www.muscleandstrength.com/exercises
-    public static readonly List<MuscleGroup> DefaultMuscleGroups =
+    public static readonly List<MuscleGroup> AppMuscleGroups =
     [
         // Core
         new() { Code = "abductors", Name = "Abductors" },
@@ -71,5 +106,11 @@ public static class DbContextExtensions
         new() { Code = "hamstrings", Name = "Hamstrings" },
         new() { Code = "it_band", Name = "IT Band"},
         new() { Code = "quads", Name = "Quadriceps" },
+    ];
+
+    public static readonly List<MeasurementUnit> AppMeasurementUnits =
+    [
+        new() { Code = "kg", Name = "Kilograms" },
+        new() { Code = "lvl", Name = "Level" }
     ];
 }
