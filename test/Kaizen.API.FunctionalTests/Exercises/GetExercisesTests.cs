@@ -7,7 +7,7 @@ using Kaizen.API.FunctionalTests.Infrastructure;
 namespace Kaizen.API.FunctionalTests.Exercises;
 
 [Collection(nameof(ApiTestCollection))]
-public class GetExercisesTests : BaseExerciseTests
+public class GetExercisesTests : BaseApiTests
 {
     public GetExercisesTests(ApiTestFixture fixture) : base(fixture)
     {

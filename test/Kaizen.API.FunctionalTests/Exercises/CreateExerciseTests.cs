@@ -1,15 +1,13 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Kaizen.API.Contracts.Exercises;
 using Kaizen.API.FunctionalTests.Fakes;
 using Kaizen.API.FunctionalTests.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Kaizen.API.FunctionalTests.Exercises;
 
 [Collection(nameof(ApiTestCollection))]
-public class CreateExerciseTests : BaseExerciseTests
+public class CreateExerciseTests : BaseApiTests
 {
     public CreateExerciseTests(ApiTestFixture fixture) : base(fixture)
     {

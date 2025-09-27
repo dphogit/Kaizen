@@ -74,6 +74,7 @@ public static class WebApplicationBuilderExtensions
     private static WebApplicationBuilder AddKaizenServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
+        builder.Services.AddScoped<IWorkoutService, WorkoutService>();
         
         return builder;
     }

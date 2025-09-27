@@ -55,16 +55,19 @@ public class TestWebApplicationFactory(string connectionString) : WebApplication
     /// Creates an <b>authenticated</b> HTTP client with normal user permissions.
     /// </summary>
     /// <returns></returns>
-    public HttpClient CreateAuthenticatedClient()
+    public HttpClient CreateAuthenticatedClient(string? username = null, string? password = null)
     {
+        username ??= TestEmail;
+        password ??= TestPassword;
+        
         var client = CreateClient();
 
         using (var scope = Services.CreateScope())
         {
-            IdentitySeeder.SeedUser(scope.ServiceProvider, TestEmail, TestPassword).Wait();
+            IdentitySeeder.SeedUser(scope.ServiceProvider, username, password).Wait();
         }
 
-        client.Login(TestEmail, TestPassword);
+        client.Login(username, password);
         
         return client;
     }

@@ -3,9 +3,9 @@
 public class Workout : TimestampedEntity
 {
     public long Id { get; set; }
-    
+
     public required string Name { get; set; }
-    
+
     public DateTimeOffset PerformedAt { get; set; }
 
     public ICollection<WorkoutSet> Sets { get; } = [];
