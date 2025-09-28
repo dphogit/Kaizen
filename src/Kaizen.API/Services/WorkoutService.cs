@@ -2,6 +2,7 @@
 using Kaizen.API.Data;
 using Kaizen.API.Models;
 using Kaizen.API.Services.Requests;
+using Kaizen.API.Services.Results;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kaizen.API.Services;
@@ -32,7 +33,7 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
         var workout = new Workout
         {
             Name = request.Name,
-            PerformedAt = request.PerformedAt,
+            PerformedAt = request.PerformedAt.ToUniversalTime(),
             UserId = request.UserId,
         };
 
@@ -71,6 +72,26 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
             .FirstOrDefaultAsync(w => w.Id == id);
 
         return workout;
+    }
+
+    public async Task<Result> DeleteWorkoutAsync(DeleteWorkoutRequest request)
+    {
+        var workout = await dbContext.Workouts.FindAsync(request.WorkoutId);
+
+        if (workout is null)
+        {
+            return Result.Fail(new NotFoundError());
+        }
+
+        if (workout.UserId != request.UserId)
+        {
+            return Result.Fail(new NotOwnerError());
+        }
+
+        dbContext.Workouts.Remove(workout);
+        await dbContext.SaveChangesAsync();
+        
+        return Result.Ok();
     }
 
     private Task<bool> UserExistsAsync(string userId)

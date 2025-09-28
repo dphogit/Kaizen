@@ -11,4 +11,6 @@ public interface IWorkoutService
     public Task<IList<Workout>> GetWorkoutsAsync(GetWorkoutsFilters filters);
     
     public Task<Workout?> GetWorkoutAsync(long id);
+
+    public Task<Result> DeleteWorkoutAsync(DeleteWorkoutRequest request);
 }

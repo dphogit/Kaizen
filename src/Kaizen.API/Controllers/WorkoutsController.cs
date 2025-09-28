@@ -3,6 +3,7 @@ using Kaizen.API.Middleware;
 using Kaizen.API.Models;
 using Kaizen.API.Services;
 using Kaizen.API.Services.Requests;
+using Kaizen.API.Services.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -57,16 +58,16 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
     public async Task<WorkoutDto[]> GetWorkouts()
     {
         var user = HttpContext.GetCurrentUser();
-        
+
         var filters = new GetWorkoutsFilters
         {
             UserId = user.Id
         };
-        
+
         var workouts = await workoutService.GetWorkoutsAsync(filters);
         return workouts.ToWorkoutDtos().ToArray();
     }
-    
+
     [HttpGet("{id:long}")]
     public async Task<Results<Ok<WorkoutDto>, ProblemHttpResult>> GetWorkout(long id)
     {
@@ -77,7 +78,7 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
             logger.LogWarning("Workout not found: {WorkoutId}", id);
             return CreateNotFoundProblem(id);
         }
-        
+
         var currentUser = HttpContext.GetCurrentUser();
 
         if (workout.UserId != currentUser.Id)
@@ -87,6 +88,40 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
         }
 
         return TypedResults.Ok(workout.ToWorkoutDto());
+    }
+
+    [HttpDelete("{id:long}")]
+    public async Task<Results<NoContent, ProblemHttpResult>> DeleteWorkout(long id)
+    {
+        var user = HttpContext.GetCurrentUser();
+
+        var deleteRequest = new DeleteWorkoutRequest
+        {
+            UserId = user.Id,
+            WorkoutId = id
+        };
+        
+        var result = await workoutService.DeleteWorkoutAsync(deleteRequest);
+
+        if (result.IsFailed)
+        {
+            if (result.HasError<NotFoundError>())
+            {
+                logger.LogWarning("Workout id {WorkoutId} not found for deletion", id);
+                return CreateNotFoundProblem(id);
+            }
+
+            if (result.HasError<NotOwnerError>())
+            {
+                logger.LogWarning("Workout id {WorkoutId} does not belong to user {Email}", id, user.Email);
+                return CreateNotFoundProblem(id);
+            }
+
+            throw new InvalidOperationException("Unexpected failure trying to delete workout.");
+        }
+
+        logger.LogInformation("Deleted workout with id {WorkoutId}", id);
+        return TypedResults.NoContent();
     }
 
     private static ProblemHttpResult CreateNotFoundProblem(long id)
