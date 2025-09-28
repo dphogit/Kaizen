@@ -53,9 +53,19 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
         return Result.Ok(workout);
     }
 
-    public Task<Workout?> GetWorkoutAsync(long id)
+    public async Task<IList<Workout>> GetWorkoutsAsync(GetWorkoutsFilters filters)
     {
-        var workout = dbContext.Workouts
+        return await dbContext.Workouts
+            .Where(w => w.UserId == filters.UserId)
+            .OrderByDescending(w => w.PerformedAt)
+            .Include(w => w.Sets)
+            .ThenInclude(s => s.Exercise)
+            .ToListAsync();
+    }
+
+    public async Task<Workout?> GetWorkoutAsync(long id)
+    {
+        var workout = await dbContext.Workouts
             .Include(w => w.Sets)
             .ThenInclude(s => s.Exercise)
             .FirstOrDefaultAsync(w => w.Id == id);

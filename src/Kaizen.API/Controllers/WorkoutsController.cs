@@ -52,6 +52,20 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
         var location = Url.Action(nameof(GetWorkout), new { id = createdWorkout.Id });
         return TypedResults.Created(location, createdWorkout.ToWorkoutDto());
     }
+
+    [HttpGet]
+    public async Task<WorkoutDto[]> GetWorkouts()
+    {
+        var user = HttpContext.GetCurrentUser();
+        
+        var filters = new GetWorkoutsFilters
+        {
+            UserId = user.Id
+        };
+        
+        var workouts = await workoutService.GetWorkoutsAsync(filters);
+        return workouts.ToWorkoutDtos().ToArray();
+    }
     
     [HttpGet("{id:long}")]
     public async Task<Results<Ok<WorkoutDto>, ProblemHttpResult>> GetWorkout(long id)

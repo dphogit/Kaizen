@@ -17,6 +17,11 @@ public static class WorkoutExtensions
         };
     }
 
+    public static IEnumerable<WorkoutDto> ToWorkoutDtos(this IEnumerable<Workout> workouts)
+    {
+        return workouts.Select(ToWorkoutDto);
+    }
+
     public static WorkoutDto.Set ToWorkoutSetDto(this WorkoutSet workoutSet)
     {
         return new WorkoutDto.Set()
