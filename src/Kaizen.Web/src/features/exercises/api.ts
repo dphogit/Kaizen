@@ -21,6 +21,7 @@ export function useExercisesQuery() {
   return useQuery({
     queryKey: exerciseQueryKeys.all,
     queryFn: getExercises,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -71,10 +72,7 @@ export function useMuscleGroupsQuery() {
     queryFn: getMuscleGroups,
 
     // Muscle groups data is static and does not change during app runtime.
-    staleTime: Infinity,
+    staleTime: "static",
     gcTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false,
   });
 }

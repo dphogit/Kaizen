@@ -5,7 +5,7 @@ using Kaizen.API.Extensions;
 using Kaizen.API.FunctionalTests.Infrastructure;
 using Kaizen.API.Models;
 
-namespace Kaizen.API.FunctionalTests.Exercises;
+namespace Kaizen.API.FunctionalTests.MuscleGroups;
 
 [Collection(nameof(ApiTestCollection))]
 public class GetMuscleGroupTests(ApiTestFixture fixture)
