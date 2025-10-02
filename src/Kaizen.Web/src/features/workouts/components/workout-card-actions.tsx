@@ -3,13 +3,20 @@ import { useDisclosure } from "@mantine/hooks";
 import { ActionIcon, Menu } from "@mantine/core";
 import { IconDots, IconEdit, IconTrash } from "@tabler/icons-react";
 import DeleteWorkoutModal from "./delete-workout-modal";
+import { useNavigate } from "react-router";
+import { AppRoutes } from "../../../routes";
 
 type WorkoutCardActionsProps = {
-  workout: Workout
-}
+  workout: Workout;
+};
 
 export default function WorkoutCardActions(props: WorkoutCardActionsProps) {
   const [opened, { open, close }] = useDisclosure();
+  const navigate = useNavigate();
+
+  function onEditClick() {
+    navigate(AppRoutes.Workouts.Edit(props.workout.id));
+  }
 
   return (
     <>
@@ -22,7 +29,9 @@ export default function WorkoutCardActions(props: WorkoutCardActionsProps) {
 
         <Menu.Dropdown>
           <Menu.Label>Options</Menu.Label>
-          <Menu.Item leftSection={<IconEdit size={16} />}>Edit</Menu.Item>
+          <Menu.Item leftSection={<IconEdit size={16} />} onClick={onEditClick}>
+            Edit
+          </Menu.Item>
           <Menu.Item
             leftSection={<IconTrash size={16} color="red" />}
             c="red"

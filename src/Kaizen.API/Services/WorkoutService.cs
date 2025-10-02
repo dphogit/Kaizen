@@ -54,6 +54,55 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
         return Result.Ok(workout);
     }
 
+    public async Task<Result<Workout>> UpdateWorkoutAsync(UpdateWorkoutRequest request)
+    {
+        var errors = new List<IError>();
+        
+        var workout = await GetWorkoutAsync(request.Id);
+
+        if (workout is null)
+        {
+            return Result.Fail(new NotFoundError());
+        }
+
+        if (workout.UserId != request.UserId)
+        {
+            return Result.Fail(new NotOwnerError());
+        }
+        
+        var setsValidationResult = await ValidateWorkoutSetsAsync(request.Sets);
+
+        if (setsValidationResult.IsFailed)
+        {
+            errors.AddRange(setsValidationResult.Errors);
+        }
+
+        if (errors.Count > 0)
+        {
+            return Result.Fail(errors);
+        }
+        
+        workout.Name = request.Name;
+        workout.PerformedAt = request.PerformedAt.ToUniversalTime();
+        
+        // Replace the existing join entities with the new values
+        workout.Sets.Clear();
+        foreach (var set in request.Sets)
+        {
+            workout.Sets.Add(new WorkoutSet
+            {
+                ExerciseId = set.ExerciseId,
+                Repetitions = set.Repetitions,
+                Quantity = set.Quantity,
+                MeasurementUnitCode = set.MeasurementUnitCode
+            });
+        }
+        
+        await dbContext.SaveChangesAsync();
+        
+        return Result.Ok(workout);
+    }
+
     public async Task<IList<Workout>> GetWorkoutsAsync(GetWorkoutsFilters filters)
     {
         return await dbContext.Workouts
@@ -90,7 +139,7 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
 
         dbContext.Workouts.Remove(workout);
         await dbContext.SaveChangesAsync();
-        
+
         return Result.Ok();
     }
 
@@ -99,13 +148,26 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
         return dbContext.Users.AnyAsync(u => u.Id == userId);
     }
 
+    private async Task<Result<List<WorkoutSet>>> ValidateWorkoutSetsAsync(ICollection<UpdateWorkoutRequest.Set> sets)
+    {
+        var list = sets.Select(s => new CreateWorkoutRequest.Set
+        {
+            ExerciseId = s.ExerciseId,
+            Repetitions = s.Repetitions,
+            Quantity = s.Quantity,
+            MeasurementUnitCode = s.MeasurementUnitCode
+        }).ToList();
+        
+        return await ValidateWorkoutSetsAsync(list);
+    }
+
     private async Task<Result<List<WorkoutSet>>> ValidateWorkoutSetsAsync(ICollection<CreateWorkoutRequest.Set> sets)
     {
         if (sets.Count == 0)
         {
             return Result.Fail("A workout must have at least one recorded set.");
         }
-        
+
         List<IError> errors = [];
 
         var requestedExerciseIds = sets.Select(s => s.ExerciseId).Distinct();
@@ -148,7 +210,7 @@ public class WorkoutService(KaizenDbContext dbContext) : IWorkoutService
             MeasurementUnit = validMeasurementUnits.Single(e => e.Code == s.MeasurementUnitCode),
             MeasurementUnitCode = s.MeasurementUnitCode
         });
-        
+
         return Result.Ok(workoutSets.ToList());
     }
 }

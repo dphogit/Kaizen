@@ -20,7 +20,7 @@ public class DeleteWorkoutTests : BaseApiTests
 
         var exercise = await CreateExercise(ExerciseFakes.UpsertBenchPress);
 
-        var workoutReq = new RecordWorkoutDto
+        var workoutReq = new UpsertWorkoutDto
         {
             Name = "Test Workout",
             PerformedAt = DateTimeOffset.UtcNow,
@@ -60,7 +60,7 @@ public class DeleteWorkoutTests : BaseApiTests
 
         var exercise = await CreateExercise(ExerciseFakes.UpsertBenchPress);
 
-        var workoutReq = new RecordWorkoutDto
+        var workoutReq = new UpsertWorkoutDto
         {
             Name = "Test Workout",
             PerformedAt = DateTimeOffset.UtcNow,

@@ -1,6 +1,6 @@
 ﻿namespace Kaizen.API.Contracts.Workouts;
 
-public record RecordWorkoutDto
+public record UpsertWorkoutDto
 {
     public required string Name { get; init; }
     public required DateTimeOffset PerformedAt { get; init; }

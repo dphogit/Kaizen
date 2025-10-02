@@ -13,7 +13,7 @@ public static class WorkoutAssertions
         Assert.All(expected.Sets, set => Assert.Contains(set, actual.Sets));
     }
     
-    public static void AssertEqual(RecordWorkoutDto r, WorkoutDto w)
+    public static void AssertEqual(UpsertWorkoutDto r, WorkoutDto w)
     {
         Assert.Equal(r.Name, w.Name);
         Assert.Equal(r.PerformedAt, w.PerformedAt);
@@ -22,13 +22,13 @@ public static class WorkoutAssertions
         Assert.All(r.Sets, set => AssertContains(set, w));
     }
 
-    private static void AssertContains(RecordWorkoutDto.Set r, WorkoutDto w)
+    private static void AssertContains(UpsertWorkoutDto.Set r, WorkoutDto w)
     {
         var foundSet = w.Sets.FirstOrDefault(set => AreEqual(r, set));
         Assert.NotNull(foundSet);
     }
 
-    private static bool AreEqual(RecordWorkoutDto.Set r, WorkoutDto.Set s)
+    private static bool AreEqual(UpsertWorkoutDto.Set r, WorkoutDto.Set s)
     {
         return r.ExerciseId == s.ExerciseId &&
                r.Repetitions == s.Repetitions &&

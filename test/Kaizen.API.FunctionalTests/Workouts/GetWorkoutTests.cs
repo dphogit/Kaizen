@@ -34,13 +34,13 @@ public class GetWorkoutTests : BaseApiTests
         
         var benchPress = await CreateExercise(ExerciseFakes.UpsertBenchPress);
 
-        var recordWorkoutDto = new RecordWorkoutDto
+        var recordWorkoutDto = new UpsertWorkoutDto
         {
             Name = "Bench Press",
             PerformedAt = DateTimeOffset.Now,
             Sets =
             [
-                new RecordWorkoutDto.Set
+                new UpsertWorkoutDto.Set
                     { ExerciseId = benchPress.Id, Repetitions = 10, Quantity = 20, MeasurementUnitCode = "kg" }
             ]
         };
@@ -66,13 +66,13 @@ public class GetWorkoutTests : BaseApiTests
 
         var benchPress = await CreateExercise(ExerciseFakes.UpsertBenchPress);
 
-        var recordWorkoutDto = new RecordWorkoutDto
+        var recordWorkoutDto = new UpsertWorkoutDto
         {
             Name = "Bench Press",
             PerformedAt = DateTimeOffset.Now,
             Sets =
             [
-                new RecordWorkoutDto.Set
+                new UpsertWorkoutDto.Set
                     { ExerciseId = benchPress.Id, Repetitions = 10, Quantity = 20, MeasurementUnitCode = "kg" }
             ]
         };

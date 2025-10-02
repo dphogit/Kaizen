@@ -1,7 +1,7 @@
 ﻿import { z } from "zod";
 import { datetimeSchema } from "@/lib/dates";
 
-export const recordWorkoutSchema = z.object({
+export const upsertWorkoutSchema = z.object({
   name: z.string(),
   performedAt: datetimeSchema,
   sets: z
@@ -30,7 +30,7 @@ export const workoutSchema = z.object({
     .array(),
 });
 
-export type RecordWorkout = z.infer<typeof recordWorkoutSchema>;
+export type UpsertWorkout = z.infer<typeof upsertWorkoutSchema>;
 export type Workout = z.infer<typeof workoutSchema>;
 
 export const measurementUnitSchema = z.object({

@@ -2,13 +2,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   measurementUnitSchema,
-  type RecordWorkout,
+  type UpsertWorkout,
   type Workout,
   workoutSchema,
 } from "./types";
 
 export const workoutQueryKeys = {
   all: ["workouts"],
+  single: (id: Workout["id"]) => [...workoutQueryKeys.all, id] as const,
 } as const;
 
 export async function getMyWorkouts() {
@@ -20,6 +21,18 @@ export function useMyWorkouts() {
   return useQuery({
     queryKey: workoutQueryKeys.all,
     queryFn: getMyWorkouts,
+  });
+}
+
+export async function getWorkout(id: Workout["id"]) {
+  const response = await apiClient.get(`/workouts/${id}`);
+  return workoutSchema.parse(response.data);
+}
+
+export function useGetWorkout(id: Workout["id"]) {
+  return useQuery({
+    queryKey: workoutQueryKeys.single(id),
+    queryFn: () => getWorkout(id),
   });
 }
 
@@ -38,7 +51,7 @@ export function useMeasurementUnits() {
   });
 }
 
-export async function recordWorkout(workout: RecordWorkout) {
+export async function recordWorkout(workout: UpsertWorkout) {
   const response = await apiClient.post("/workouts", workout);
   return workoutSchema.parse(response.data);
 }
@@ -48,10 +61,36 @@ export function useWorkoutMutation() {
 
   return useMutation({
     mutationFn: recordWorkout,
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: workoutQueryKeys.all,
-      }),
+    onSuccess: (newWorkout) => {
+      const updater = (prev: Workout[] | undefined) =>
+        prev ? [newWorkout, ...prev] : [newWorkout];
+
+      queryClient.setQueryData(workoutQueryKeys.all, updater);
+    },
+  });
+}
+
+export async function updateWorkout(data: {
+  id: Workout["id"];
+  workout: UpsertWorkout;
+}) {
+  const response = await apiClient.put(`/workouts/${data.id}`, data.workout);
+  return workoutSchema.parse(response.data);
+}
+
+export function useUpdateWorkoutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateWorkout,
+    onSuccess: (updatedWorkout) => {
+      const updater = (prev: Workout[] | undefined) =>
+        prev
+          ? prev.map((w) => (w.id === updatedWorkout.id ? updatedWorkout : w))
+          : [updatedWorkout];
+
+      queryClient.setQueryData(workoutQueryKeys.all, updater);
+    },
   });
 }
 
@@ -65,7 +104,9 @@ export function useDeleteWorkoutMutation() {
   return useMutation({
     mutationFn: deleteWorkout,
     onSuccess: (_, id) => {
-      const updater = (prev: Workout[]) => prev.filter((w) => w.id !== id);
+      const updater = (prev: Workout[] | undefined) =>
+        prev ? prev.filter((w) => w.id !== id) : [];
+      
       queryClient.setQueryData(workoutQueryKeys.all, updater);
     },
   });

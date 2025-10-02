@@ -1,13 +1,12 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Kaizen.API.Contracts.Workouts;
-using Kaizen.API.FunctionalTests.Fakes;
 using Kaizen.API.FunctionalTests.Infrastructure;
 
 namespace Kaizen.API.FunctionalTests.Workouts;
 
 [Collection(nameof(ApiTestCollection))]
-public class RecordWorkoutTests : BaseApiTests
+public class RecordWorkoutTests : UpsertWorkoutTests
 {
     public RecordWorkoutTests(ApiTestFixture fixture) : base(fixture)
     {
@@ -68,31 +67,5 @@ public class RecordWorkoutTests : BaseApiTests
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await AssertResponseHasProblemDetailsErrors(response);
-    }
-
-    private async Task<RecordWorkoutDto> CreatePushDayRequest()
-    {
-        var benchPress = await CreateExercise(ExerciseFakes.UpsertBenchPress);
-        var shoulderPress = await CreateExercise(ExerciseFakes.UpsertShoulderPress);
-
-        var recordWorkoutDto = new RecordWorkoutDto
-        {
-            Name = "Push Day",
-            PerformedAt = DateTimeOffset.UtcNow,
-            Sets =
-            [
-                new RecordWorkoutDto.Set
-                    { ExerciseId = benchPress.Id, Repetitions = 8, Quantity = 20, MeasurementUnitCode = "kg" },
-                new RecordWorkoutDto.Set
-                    { ExerciseId = benchPress.Id, Repetitions = 8, Quantity = 20, MeasurementUnitCode = "kg" },
-
-                new RecordWorkoutDto.Set
-                    { ExerciseId = shoulderPress.Id, Repetitions = 10, Quantity = 5, MeasurementUnitCode = "lvl" },
-                new RecordWorkoutDto.Set
-                    { ExerciseId = shoulderPress.Id, Repetitions = 10, Quantity = 5, MeasurementUnitCode = "lvl" },
-            ]
-        };
-
-        return recordWorkoutDto;
     }
 }

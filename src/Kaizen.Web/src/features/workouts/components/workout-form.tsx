@@ -20,9 +20,9 @@ import { IconPlus, IconX } from "@tabler/icons-react";
 import { z } from "zod";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import type { Exercise } from "../../exercises/types";
-import type { MeasurementUnit } from "../types";
+import type { MeasurementUnit, Workout } from "../types";
 import dayjs from "dayjs";
-import { useWorkoutMutation } from "../api";
+import { useUpdateWorkoutMutation, useWorkoutMutation } from "../api";
 import { useNavigate } from "react-router";
 import { AppRoutes } from "../../../routes";
 import { notifications } from "@mantine/notifications";
@@ -70,11 +70,27 @@ function unitsNameComparer(a: MeasurementUnit, b: MeasurementUnit) {
   return a.name < b.name ? -1 : 1;
 }
 
-const initialValues: WorkoutFormValues = {
-  name: "",
-  performedAt: new Date().toISOString(),
-  sets: [],
-};
+function getFormInitialValues(workout?: Workout): WorkoutFormValues {
+  if (!workout) {
+    return {
+      name: "",
+      performedAt: new Date().toISOString(),
+      sets: [],
+    };
+  }
+
+  const sets = workout.sets.map((set) => ({
+    ...set,
+    id: set.id.toString(),
+    exerciseId: set.exerciseId.toString(),
+  }));
+
+  return {
+    name: workout.name,
+    performedAt: workout.performedAt,
+    sets,
+  };
+}
 
 const WorkoutSetColumnFlex = {
   Exercise: 5,
@@ -85,15 +101,18 @@ const WorkoutSetColumnFlex = {
 type WorkoutFormProps = {
   exercises: Exercise[];
   units: MeasurementUnit[];
+  workout?: Workout;
 };
 
 export default function WorkoutForm(props: WorkoutFormProps) {
   const [clientErrors, setClientErrors] = useState<string[] | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const isEditMode = Boolean(props.workout);
+
   const form = useForm({
     mode: "uncontrolled",
-    initialValues,
+    initialValues: getFormInitialValues(props.workout),
     validate: zod4Resolver(workoutFormSchema),
 
     transformValues: (values) => {
@@ -112,29 +131,64 @@ export default function WorkoutForm(props: WorkoutFormProps) {
   });
 
   const workoutMutation = useWorkoutMutation();
+  const updateWorkoutMutation = useUpdateWorkoutMutation();
   const navigate = useNavigate();
 
   function submitValues(values: TransformedValues<typeof form>) {
-    workoutMutation.mutate(values, {
-      onSuccess: () => {
-        navigate(AppRoutes.Home);
-        notifications.show({
-          title: "Workout Saved",
-          message: "Well done on completing your workout.",
-          color: "teal",
-        });
-      },
-      onError: (err) => {
-        if (isAxiosError(err) && err.status === HttpStatusCode.BadRequest) {
-          setClientErrors(getValidationErrors(err));
-          return;
-        }
+    if (isEditMode) {
+      submitEdit(values);
+      return;
+    }
 
-        setServerError(
-          "Could not save workout due to server error. Try again later.",
-        );
+    submitAdd(values);
+  }
+
+  function submitEdit(values: TransformedValues<typeof form>) {
+    const id = props.workout?.id;
+
+    if (!id) {
+      throw new Error("No id for workout to update");
+    }
+
+    updateWorkoutMutation.mutate(
+      { id, workout: values },
+      {
+        onSuccess: onSubmitSuccess,
+        onError: onSubmitError,
       },
+    );
+  }
+
+  function submitAdd(values: TransformedValues<typeof form>) {
+    workoutMutation.mutate(values, {
+      onSuccess: onSubmitSuccess,
+      onError: onSubmitError,
     });
+  }
+
+  function onSubmitSuccess() {
+    const message = isEditMode
+      ? "Your workout was updated successfully."
+      : "Well done on completing your workout";
+
+    notifications.show({
+      title: "Workout Saved",
+      message,
+      color: "teal",
+    });
+
+    navigate(AppRoutes.Home);
+  }
+
+  function onSubmitError(err: Error) {
+    if (isAxiosError(err) && err.status === HttpStatusCode.BadRequest) {
+      setClientErrors(getValidationErrors(err));
+      return;
+    }
+
+    setServerError(
+      "Could not save workout due to server error. Try again later.",
+    );
   }
 
   function addSetField() {
@@ -291,7 +345,7 @@ export default function WorkoutForm(props: WorkoutFormProps) {
         <Group justify="flex-end">
           <Button
             type="submit"
-            disabled={!form.isValid()}
+            disabled={!form.isValid() || (isEditMode && !form.isDirty())}
             loading={workoutMutation.isPending}
           >
             Save Workout

@@ -36,7 +36,9 @@ export function useExerciseMutation() {
   return useMutation({
     mutationFn: createExercise,
     onSuccess: (newExercise) => {
-      const updater = (prev: Exercise[]) => [...prev, newExercise];
+      const updater = (prev: Exercise[] | undefined) =>
+        prev ? [...prev, newExercise] : [newExercise];
+
       queryClient.setQueryData(exerciseQueryKeys.all, updater);
     },
   });
@@ -53,8 +55,10 @@ export function useEditExerciseMutation() {
   return useMutation({
     mutationFn: editExercise,
     onSuccess: (updatedExercise) => {
-      const updater = (prev: Exercise[]) =>
-        prev.map((e) => (e.id === updatedExercise.id ? updatedExercise : e));
+      const updater = (prev: Exercise[] | undefined) =>
+        prev
+          ? prev.map((e) => (e.id === updatedExercise.id ? updatedExercise : e))
+          : [updatedExercise];
 
       queryClient.setQueryData(exerciseQueryKeys.all, updater);
     },

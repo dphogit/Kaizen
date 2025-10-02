@@ -15,11 +15,11 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
 {
     [HttpPost]
     public async Task<Results<Created<WorkoutDto>, ProblemHttpResult>> RecordWorkout(
-        [FromBody] RecordWorkoutDto recordWorkoutDto)
+        [FromBody] UpsertWorkoutDto upsertWorkoutDto)
     {
         var user = HttpContext.GetCurrentUser();
 
-        var sets = recordWorkoutDto.Sets.Select(s => new CreateWorkoutRequest.Set
+        var sets = upsertWorkoutDto.Sets.Select(s => new CreateWorkoutRequest.Set
         {
             ExerciseId = s.ExerciseId,
             Quantity = s.Quantity,
@@ -29,8 +29,8 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
 
         var createWorkoutRequest = new CreateWorkoutRequest
         {
-            Name = recordWorkoutDto.Name,
-            PerformedAt = recordWorkoutDto.PerformedAt,
+            Name = upsertWorkoutDto.Name,
+            PerformedAt = upsertWorkoutDto.PerformedAt,
             Sets = sets,
             UserId = user.Id
         };
@@ -40,12 +40,7 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
         if (result.IsFailed)
         {
             var errorMessages = result.Errors.Select(e => e.Message).ToList();
-
-            return TypedResults.Problem(
-                title: "One or more validation errors occurred.",
-                statusCode: StatusCodes.Status400BadRequest,
-                detail: "See the 'errors' field for details.",
-                extensions: new Dictionary<string, object?> { { "errors", errorMessages } });
+            return CreateValidationErrorsProblem(errorMessages);
         }
 
         var createdWorkout = result.Value;
@@ -90,6 +85,53 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
         return TypedResults.Ok(workout.ToWorkoutDto());
     }
 
+    [HttpPut("{id:long}")]
+    public async Task<Results<Ok<WorkoutDto>, ProblemHttpResult>> UpdateWorkout(
+        long id,
+        [FromBody] UpsertWorkoutDto upsertWorkoutDto)
+    {
+        var user = HttpContext.GetCurrentUser();
+        
+        var sets = upsertWorkoutDto.Sets.Select(s => new UpdateWorkoutRequest.Set
+        {
+            ExerciseId = s.ExerciseId,
+            Quantity = s.Quantity,
+            Repetitions = s.Repetitions,
+            MeasurementUnitCode = s.MeasurementUnitCode,
+        }).ToList();
+
+        var updateWorkoutRequest = new UpdateWorkoutRequest
+        {
+            Id = id,
+            Name = upsertWorkoutDto.Name,
+            PerformedAt = upsertWorkoutDto.PerformedAt,
+            Sets = sets,
+            UserId = user.Id
+        };
+        
+        var result = await workoutService.UpdateWorkoutAsync(updateWorkoutRequest);
+        
+        if (result.IsFailed)
+        {
+            if (result.HasError<NotFoundError>())
+            {
+                logger.LogWarning("Workout update failed. Could not find id: {WorkoutId}", id);
+                return CreateNotFoundProblem(id);
+            }
+
+            if (result.HasError<NotOwnerError>())
+            {
+                logger.LogWarning("Workout {WorkoutId} updated denied, user {Email} is not creator.", id, user.Email);
+                return CreateNotFoundProblem(id);
+            }
+            
+            var errorMessages = result.Errors.Select(e => e.Message).ToList();
+            return CreateValidationErrorsProblem(errorMessages);
+        }
+
+        return TypedResults.Ok(result.Value.ToWorkoutDto());
+    }
+
     [HttpDelete("{id:long}")]
     public async Task<Results<NoContent, ProblemHttpResult>> DeleteWorkout(long id)
     {
@@ -130,5 +172,14 @@ public class WorkoutsController(IWorkoutService workoutService, ILogger<Workouts
             title: "Workout not found",
             statusCode: StatusCodes.Status404NotFound,
             detail: $"No workout found with the id: {id}");
+    }
+
+    private static ProblemHttpResult CreateValidationErrorsProblem(List<string> errors)
+    {
+        return TypedResults.Problem(
+            title: "One or more validation errors occurred.",
+            statusCode: StatusCodes.Status400BadRequest,
+            detail: "See the 'errors' field for details.",
+            extensions: new Dictionary<string, object?> { { "errors", errors } });
     }
 }

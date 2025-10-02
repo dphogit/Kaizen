@@ -36,7 +36,7 @@ public abstract class BaseApiTests : IAsyncLifetime
     }
 
     protected async Task<WorkoutDto> CreateWorkout(
-        RecordWorkoutDto request,
+        UpsertWorkoutDto request,
         string? username = null,
         string? password = null)
     {
