@@ -3,8 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   measurementUnitSchema,
   type RecordWorkout,
+  type Workout,
   workoutSchema,
 } from "./types";
+
+export const workoutQueryKeys = {
+  all: ["workouts"],
+} as const;
 
 export async function getMyWorkouts() {
   const response = await apiClient.get("/workouts");
@@ -13,7 +18,7 @@ export async function getMyWorkouts() {
 
 export function useMyWorkouts() {
   return useQuery({
-    queryKey: ["workouts"],
+    queryKey: workoutQueryKeys.all,
     queryFn: getMyWorkouts,
   });
 }
@@ -45,7 +50,23 @@ export function useWorkoutMutation() {
     mutationFn: recordWorkout,
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["workouts"],
+        queryKey: workoutQueryKeys.all,
       }),
+  });
+}
+
+export async function deleteWorkout(id: Workout["id"]) {
+  await apiClient.delete(`/workouts/${id}`);
+}
+
+export function useDeleteWorkoutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteWorkout,
+    onSuccess: (_, id) => {
+      const updater = (prev: Workout[]) => prev.filter((w) => w.id !== id);
+      queryClient.setQueryData(workoutQueryKeys.all, updater);
+    },
   });
 }

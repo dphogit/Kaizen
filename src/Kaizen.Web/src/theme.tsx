@@ -1,10 +1,28 @@
 ﻿import type { ReactNode } from "react";
-import { createTheme, MantineProvider, Modal, Paper } from "@mantine/core";
+import {
+  ActionIcon, Alert,
+  createTheme,
+  MantineProvider,
+  Modal,
+  Paper
+} from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
 export const theme = createTheme({
   defaultRadius: "sm",
   components: {
+    ActionIcon: ActionIcon.extend({
+      defaultProps: {
+        variant: "subtle",
+        color: "gray",
+        radius: "sm",
+      },
+    }),
+    Alert: Alert.extend({
+      defaultProps: {
+        variant: "light"
+      }
+    }),
     Modal: Modal.extend({
       defaultProps: {
         size: "lg",

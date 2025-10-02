@@ -1,6 +1,7 @@
 ﻿import { Group, Paper, Stack, Text, Title } from "@mantine/core";
-import type { Workout } from "../types";
 import { formatDate } from "@/lib/dates";
+import type { Workout } from "../types";
+import WorkoutCardActions from "./workout-card-actions";
 
 type WorkoutCardProps = {
   workout: Workout;
@@ -14,7 +15,8 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
           <Title order={2}>{workout.name}</Title>
           <Text c="dimmed">{formatDate(workout.performedAt)}</Text>
         </Stack>
-        <div>Actions</div>
+
+        <WorkoutCardActions workout={workout} />
       </Group>
       <div>Collapsible Sets</div>
     </Paper>
