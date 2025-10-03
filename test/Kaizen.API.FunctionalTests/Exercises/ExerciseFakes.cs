@@ -16,7 +16,7 @@ public static class ExerciseFakes
         MuscleGroupCodes = ["hamstrings", "glutes", "lower_back"]
     };
     
-    public static UpsertExerciseDto UpdateShoulderPress => new()
+    public static UpsertExerciseDto UpsertShoulderPress => new()
     {
         Name = "Shoulder Press",
         MuscleGroupCodes = ["shoulders", "triceps", "traps"]

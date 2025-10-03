@@ -28,7 +28,7 @@ public static class WebApplicationBuilderExtensions
         {
             options.AddDefaultPolicy(policy => policy
                 .WithOrigins(allowedOrigins)
-                .WithMethods("GET", "POST", "PUT")
+                .WithMethods("GET", "POST", "PUT", "DELETE")
                 .WithHeaders(HeaderNames.ContentType, HeaderNames.Authorization)
                 .AllowCredentials());
         });
@@ -74,6 +74,7 @@ public static class WebApplicationBuilderExtensions
     private static WebApplicationBuilder AddKaizenServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IExerciseService, ExerciseService>();
+        builder.Services.AddScoped<IWorkoutService, WorkoutService>();
         
         return builder;
     }

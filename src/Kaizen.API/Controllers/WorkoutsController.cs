@@ -1,0 +1,185 @@
+﻿using Kaizen.API.Contracts.Workouts;
+using Kaizen.API.Middleware;
+using Kaizen.API.Models;
+using Kaizen.API.Services;
+using Kaizen.API.Services.Requests;
+using Kaizen.API.Services.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Kaizen.API.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class WorkoutsController(IWorkoutService workoutService, ILogger<WorkoutsController> logger) : ControllerBase
+{
+    [HttpPost]
+    public async Task<Results<Created<WorkoutDto>, ProblemHttpResult>> RecordWorkout(
+        [FromBody] UpsertWorkoutDto upsertWorkoutDto)
+    {
+        var user = HttpContext.GetCurrentUser();
+
+        var sets = upsertWorkoutDto.Sets.Select(s => new CreateWorkoutRequest.Set
+        {
+            ExerciseId = s.ExerciseId,
+            Quantity = s.Quantity,
+            Repetitions = s.Repetitions,
+            MeasurementUnitCode = s.MeasurementUnitCode,
+        }).ToList();
+
+        var createWorkoutRequest = new CreateWorkoutRequest
+        {
+            Name = upsertWorkoutDto.Name,
+            PerformedAt = upsertWorkoutDto.PerformedAt,
+            Sets = sets,
+            UserId = user.Id
+        };
+
+        var result = await workoutService.CreateWorkoutAsync(createWorkoutRequest);
+
+        if (result.IsFailed)
+        {
+            var errorMessages = result.Errors.Select(e => e.Message).ToList();
+            return CreateValidationErrorsProblem(errorMessages);
+        }
+
+        var createdWorkout = result.Value;
+
+        var location = Url.Action(nameof(GetWorkout), new { id = createdWorkout.Id });
+        return TypedResults.Created(location, createdWorkout.ToWorkoutDto());
+    }
+
+    [HttpGet]
+    public async Task<WorkoutDto[]> GetWorkouts()
+    {
+        var user = HttpContext.GetCurrentUser();
+
+        var filters = new GetWorkoutsFilters
+        {
+            UserId = user.Id
+        };
+
+        var workouts = await workoutService.GetWorkoutsAsync(filters);
+        return workouts.ToWorkoutDtos().ToArray();
+    }
+
+    [HttpGet("{id:long}")]
+    public async Task<Results<Ok<WorkoutDto>, ProblemHttpResult>> GetWorkout(long id)
+    {
+        var workout = await workoutService.GetWorkoutAsync(id);
+
+        if (workout is null)
+        {
+            logger.LogWarning("Workout not found: {WorkoutId}", id);
+            return CreateNotFoundProblem(id);
+        }
+
+        var currentUser = HttpContext.GetCurrentUser();
+
+        if (workout.UserId != currentUser.Id)
+        {
+            logger.LogWarning("Workout id {WorkoutId} does not exist for {Email}", id, workout.UserId);
+            return CreateNotFoundProblem(id);
+        }
+
+        return TypedResults.Ok(workout.ToWorkoutDto());
+    }
+
+    [HttpPut("{id:long}")]
+    public async Task<Results<Ok<WorkoutDto>, ProblemHttpResult>> UpdateWorkout(
+        long id,
+        [FromBody] UpsertWorkoutDto upsertWorkoutDto)
+    {
+        var user = HttpContext.GetCurrentUser();
+        
+        var sets = upsertWorkoutDto.Sets.Select(s => new UpdateWorkoutRequest.Set
+        {
+            ExerciseId = s.ExerciseId,
+            Quantity = s.Quantity,
+            Repetitions = s.Repetitions,
+            MeasurementUnitCode = s.MeasurementUnitCode,
+        }).ToList();
+
+        var updateWorkoutRequest = new UpdateWorkoutRequest
+        {
+            Id = id,
+            Name = upsertWorkoutDto.Name,
+            PerformedAt = upsertWorkoutDto.PerformedAt,
+            Sets = sets,
+            UserId = user.Id
+        };
+        
+        var result = await workoutService.UpdateWorkoutAsync(updateWorkoutRequest);
+        
+        if (result.IsFailed)
+        {
+            if (result.HasError<NotFoundError>())
+            {
+                logger.LogWarning("Workout update failed. Could not find id: {WorkoutId}", id);
+                return CreateNotFoundProblem(id);
+            }
+
+            if (result.HasError<NotOwnerError>())
+            {
+                logger.LogWarning("Workout {WorkoutId} updated denied, user {Email} is not creator.", id, user.Email);
+                return CreateNotFoundProblem(id);
+            }
+            
+            var errorMessages = result.Errors.Select(e => e.Message).ToList();
+            return CreateValidationErrorsProblem(errorMessages);
+        }
+
+        return TypedResults.Ok(result.Value.ToWorkoutDto());
+    }
+
+    [HttpDelete("{id:long}")]
+    public async Task<Results<NoContent, ProblemHttpResult>> DeleteWorkout(long id)
+    {
+        var user = HttpContext.GetCurrentUser();
+
+        var deleteRequest = new DeleteWorkoutRequest
+        {
+            UserId = user.Id,
+            WorkoutId = id
+        };
+        
+        var result = await workoutService.DeleteWorkoutAsync(deleteRequest);
+
+        if (result.IsFailed)
+        {
+            if (result.HasError<NotFoundError>())
+            {
+                logger.LogWarning("Workout id {WorkoutId} not found for deletion", id);
+                return CreateNotFoundProblem(id);
+            }
+
+            if (result.HasError<NotOwnerError>())
+            {
+                logger.LogWarning("Workout id {WorkoutId} does not belong to user {Email}", id, user.Email);
+                return CreateNotFoundProblem(id);
+            }
+
+            throw new InvalidOperationException("Unexpected failure trying to delete workout.");
+        }
+
+        logger.LogInformation("Deleted workout with id {WorkoutId}", id);
+        return TypedResults.NoContent();
+    }
+
+    private static ProblemHttpResult CreateNotFoundProblem(long id)
+    {
+        return TypedResults.Problem(
+            title: "Workout not found",
+            statusCode: StatusCodes.Status404NotFound,
+            detail: $"No workout found with the id: {id}");
+    }
+
+    private static ProblemHttpResult CreateValidationErrorsProblem(List<string> errors)
+    {
+        return TypedResults.Problem(
+            title: "One or more validation errors occurred.",
+            statusCode: StatusCodes.Status400BadRequest,
+            detail: "See the 'errors' field for details.",
+            extensions: new Dictionary<string, object?> { { "errors", errors } });
+    }
+}

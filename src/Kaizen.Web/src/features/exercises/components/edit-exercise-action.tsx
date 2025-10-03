@@ -17,7 +17,7 @@ export default function EditExerciseAction(props: EditExerciseActionProps) {
         <ExerciseForm exercise={props.exercise} onSaveSuccess={close} />
       </Modal>
 
-      <ActionIcon variant="subtle" color="gray" radius="sm" onClick={open}>
+      <ActionIcon onClick={open}>
         <IconEdit stroke={1.5} />
       </ActionIcon>
     </>

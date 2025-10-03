@@ -7,7 +7,7 @@ using Kaizen.API.FunctionalTests.Infrastructure;
 namespace Kaizen.API.FunctionalTests.Exercises;
 
 [Collection(nameof(ApiTestCollection))]
-public class UpdateExerciseTests : BaseExerciseTests
+public class UpdateExerciseTests : BaseApiTests
 {
     public UpdateExerciseTests(ApiTestFixture fixture) : base(fixture)
     {
@@ -49,7 +49,7 @@ public class UpdateExerciseTests : BaseExerciseTests
         var client = Fixture.Factory.CreateAdminClient();
         
         // Act
-        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpdateShoulderPress);
+        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpsertShoulderPress);
         
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -84,7 +84,7 @@ public class UpdateExerciseTests : BaseExerciseTests
         var client = Fixture.Factory.CreateClient();
         
         // Act
-        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpdateShoulderPress);
+        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpsertShoulderPress);
         
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -97,7 +97,7 @@ public class UpdateExerciseTests : BaseExerciseTests
         var client = Fixture.Factory.CreateAuthenticatedClient();
         
         // Act
-        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpdateShoulderPress);
+        var response = await client.PutAsJsonAsync("/exercises/1", ExerciseFakes.UpsertShoulderPress);
         
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

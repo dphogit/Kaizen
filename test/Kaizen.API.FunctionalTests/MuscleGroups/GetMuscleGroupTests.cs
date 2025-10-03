@@ -5,7 +5,7 @@ using Kaizen.API.Extensions;
 using Kaizen.API.FunctionalTests.Infrastructure;
 using Kaizen.API.Models;
 
-namespace Kaizen.API.FunctionalTests.Exercises;
+namespace Kaizen.API.FunctionalTests.MuscleGroups;
 
 [Collection(nameof(ApiTestCollection))]
 public class GetMuscleGroupTests(ApiTestFixture fixture)
@@ -18,7 +18,7 @@ public class GetMuscleGroupTests(ApiTestFixture fixture)
         // Arrange
         var client = fixture.Factory.CreateAuthenticatedClient();
         
-        var expectedDtos = DbContextExtensions.DefaultMuscleGroups.ToMuscleGroupDtos();
+        var expectedDtos = DbContextExtensions.AppMuscleGroups.ToMuscleGroupDtos();
         
         // Act
         var response = await client.GetAsync("/muscle-groups");
