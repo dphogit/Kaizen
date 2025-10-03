@@ -1,4 +1,4 @@
-﻿import { Container, Loader, Paper, Text, Title } from "@mantine/core";
+﻿import { Loader, Paper, Text, Title } from "@mantine/core";
 import WorkoutForm from "./workout-form";
 import { useExercisesQuery } from "@/features/exercises/api";
 import { useMeasurementUnits } from "../api";
@@ -22,11 +22,9 @@ function Body() {
 
 export default function RecordWorkoutPage() {
   return (
-    <Container maw="900px">
-      <Paper>
-        <Title mb="md">Record a New Workout</Title>
-        <Body />
-      </Paper>
-    </Container>
+    <Paper>
+      <Title mb="md">Record a New Workout</Title>
+      <Body />
+    </Paper>
   );
 }

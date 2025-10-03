@@ -1,4 +1,4 @@
-﻿import { Container, Loader, Paper, Text, Title } from "@mantine/core";
+﻿import { Loader, Paper, Text, Title } from "@mantine/core";
 import { useParams } from "react-router";
 import { useExercisesQuery } from "@/features/exercises/api";
 import { useGetWorkout, useMeasurementUnits } from "../api";
@@ -25,12 +25,10 @@ export default function EditWorkoutPage() {
     );
 
   return (
-    <Container maw="900px">
-      <Paper>
-        <Title mb="md">Edit Workout</Title>
-        {PageBody}
-      </Paper>
-    </Container>
+    <Paper>
+      <Title mb="md">Edit Workout</Title>
+      {PageBody}
+    </Paper>
   );
 }
 

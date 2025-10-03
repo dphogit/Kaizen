@@ -1,15 +1,13 @@
-﻿import { AppShell, Button, Container, Group, Menu, Title } from "@mantine/core";
-import { IconChevronDown, IconLogout, IconUser } from "@tabler/icons-react";
-import { useMeContext } from "@/features/auth/stores/me-context";
-import { useLogoutMutation } from "@/features/auth/api";
-import { notifications } from "@mantine/notifications";
+﻿import type { ReactNode } from "react";
 import { NavLink as ReactRouterNavLink, Outlet } from "react-router";
+import { AppShell, Button, Container, Group, Title } from "@mantine/core";
+import { useMeContext } from "@/features/auth/stores/me-context";
 import { AppRoutes } from "../routes";
-import type { ReactNode } from "react";
+import UserMenu from "./user-menu";
 
 function PageContainer(props: { children: ReactNode }) {
   return (
-    <Container maw="1280px" px="xl" h="100%">
+    <Container maw="900px" px="xl" h="100%">
       {props.children}
     </Container>
   );
@@ -25,53 +23,6 @@ function PageLink(props: { to: string; children: ReactNode }) {
     >
       {props.children}
     </Button>
-  );
-}
-
-function UserMenu() {
-  const me = useMeContext();
-
-  const logoutMutation = useLogoutMutation();
-
-  function handleLogoutClick() {
-    logoutMutation.mutate(undefined, {
-      onError: () => {
-        notifications.show({
-          title: "Logout Failed",
-          message: "An error occurred, please try again later.",
-          color: "red",
-          position: "top-center",
-        });
-      },
-    });
-  }
-
-  return (
-    <Menu width={200} position="bottom-end" shadow="xl">
-      <Menu.Target>
-        <Button
-          radius="sm"
-          variant="transparent"
-          rightSection={<IconChevronDown size={14} stroke={3} />}
-          color="white"
-        >
-          {me.email}
-        </Button>
-      </Menu.Target>
-
-      <Menu.Dropdown>
-        <Menu.Label>Settings</Menu.Label>
-        <Menu.Item leftSection={<IconUser size={14} />} disabled>
-          Profile (Coming Soon)
-        </Menu.Item>
-        <Menu.Item
-          leftSection={<IconLogout size={14} />}
-          onClick={handleLogoutClick}
-        >
-          Log Out
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
   );
 }
 
