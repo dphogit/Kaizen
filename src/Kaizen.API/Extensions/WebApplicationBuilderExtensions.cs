@@ -14,7 +14,8 @@ public static class WebApplicationBuilderExtensions
         return builder.AddKaizenCors()
             .AddKaizenDatabase()
             .AddKaizenAuth()
-            .AddKaizenServices();
+            .AddKaizenServices()
+            .AddKaizenHealthCheck();
     }
 
     private static WebApplicationBuilder AddKaizenCors(this WebApplicationBuilder builder)
@@ -38,10 +39,7 @@ public static class WebApplicationBuilderExtensions
 
     private static WebApplicationBuilder AddKaizenDatabase(this WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-        if (connectionString is null)
-            throw new InvalidOperationException("No connection string is configured");
+        var connectionString = builder.Configuration.GetRequiredDbConnectionString();
 
         builder.Services.AddSqlServer<KaizenDbContext>(connectionString);
 
@@ -77,5 +75,25 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IWorkoutService, WorkoutService>();
         
         return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenHealthCheck(this WebApplicationBuilder builder)
+    {
+        var connectionString = builder.Configuration.GetRequiredDbConnectionString();
+        
+        builder.Services.AddHealthChecks()
+            .AddSqlServer(connectionString, tags: ["ready"]);
+        
+        return builder;
+    }
+
+    private static string GetRequiredDbConnectionString(this ConfigurationManager config)
+    {
+        var connectionString = config.GetConnectionString("DefaultConnection");
+
+        if (connectionString is null)
+            throw new InvalidOperationException("No connection string is configured");
+        
+        return connectionString;
     }
 }

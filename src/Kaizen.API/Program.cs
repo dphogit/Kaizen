@@ -1,6 +1,8 @@
-﻿using Kaizen.API.Configuration;
+﻿using HealthChecks.UI.Client;
+using Kaizen.API.Configuration;
 using Kaizen.API.Extensions;
 using Kaizen.API.Middleware;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +47,19 @@ app.UseCors();
 app.UseAuthorization();
 
 app.UseCurrentUserMiddleware();
+
+// liveness probe
+app.MapHealthChecks("/healthz/live", new HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+// readiness probe
+app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
+{
+    Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 // All endpoints require auth, besides login which allows anonymous. 
 app.MapControllers().RequireAuthorization();
