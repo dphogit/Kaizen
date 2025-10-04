@@ -1,4 +1,5 @@
-﻿using Kaizen.API.Data;
+﻿using Azure.Identity;
+using Kaizen.API.Data;
 using Kaizen.API.Models;
 using Kaizen.API.Services;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +12,18 @@ public static class WebApplicationBuilderExtensions
 {
     public static WebApplicationBuilder AddKaizen(this WebApplicationBuilder builder)
     {
+        if (builder.Environment.IsProduction())
+        {
+            var vaultUriValue = builder.Configuration.GetValue<string>("Azure:KeyVaultUri");
+            
+            if (vaultUriValue is null)
+            {
+                throw new InvalidOperationException("Azure:KeyVaultUri is not configured.");
+            }
+
+            builder.Configuration.AddAzureKeyVault(new Uri(vaultUriValue), new ManagedIdentityCredential());
+        }
+        
         return builder.AddKaizenCors()
             .AddKaizenDatabase()
             .AddKaizenAuth()
