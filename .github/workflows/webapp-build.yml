@@ -1,0 +1,37 @@
+﻿name: webapp-build.yml
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'github/workflows/webapp-build-and-deploy.yml'
+      - 'src/Kaizen.Web/**'
+
+env:
+  APP_LOCATION: 'src/Kaizen.Web'
+  BUILD_LOCATION: 'src/Kaizen.Web/dist'
+
+jobs:
+  build:
+    name: Check Web App Build
+    runs-on: ubuntu-latest
+    
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.19.x
+
+      - name: Install Dependencies
+        working-directory: ${{ env.APP_LOCATION }}
+        run: npm install
+
+      - name: Build Web App
+        working-directory: ${{ env.APP_LOCATION }}
+        run: npm run build

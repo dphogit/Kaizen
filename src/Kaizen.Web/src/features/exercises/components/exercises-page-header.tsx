@@ -1,6 +1,7 @@
 ﻿import { Button, Group, Modal, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import ExerciseForm from "./exercise-form";
+import { IconPlus } from "@tabler/icons-react";
 
 export default function ExercisesPageHeader() {
   const [opened, { open, close }] = useDisclosure();
@@ -13,7 +14,9 @@ export default function ExercisesPageHeader() {
 
       <Group justify="space-between" mb="lg">
         <Title>Manage Exercises</Title>
-        <Button onClick={open}>Add</Button>
+        <Button onClick={open} leftSection={<IconPlus size={18} />}>
+          Add
+        </Button>
       </Group>
     </>
   );
