@@ -51,15 +51,28 @@ public class ApiTestFixture : IAsyncLifetime
             .Options;
 
         // Recreate the test DB with the schema defined by the EF model.
+        // We need to use migrations as opposed to the EnsureCreated/EnsureDeleted methods
+        // because the DbContext model contains managed data via HasData.
+        // https://learn.microsoft.com/en-us/ef/core/modeling/data-seeding#model-managed-data
         await using (var context = new KaizenDbContext(_dbContextOptions))
         {
-            await context.Database.EnsureDeletedAsync();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
         }
 
         // Setup Respawn to provide the ability to reset/clean the DB within tests on demand.
         // This is more efficient than having to repeatedly deleting and creating the database.
-        var respawnerOptions = new RespawnerOptions { TablesToIgnore = [new Table("__EFMigrationsHistory")] };
+        var respawnerOptions = new RespawnerOptions
+        {
+            TablesToIgnore =
+            [
+                new Table("__EFMigrationsHistory"),
+                
+                // Don't reset the managed model data that populates via migrations.
+                new Table("MeasurementUnits"),
+                new Table("MuscleGroups")
+            ]
+        };
+
         _respawner = await Respawner.CreateAsync(_connectionString, respawnerOptions);
 
         // Create the webapp factory pointing to the setup test container DB
@@ -80,12 +93,6 @@ public class ApiTestFixture : IAsyncLifetime
 
     private async Task Reseed()
     {
-        await using (var context = new KaizenDbContext(_dbContextOptions))
-        {
-            // The DB should be cleared, but still exist - the schema is created, and seeding is performed.
-            await context.Database.EnsureCreatedAsync();
-        }
-        
         await ReseedAdminUserAsync();
     }
 
@@ -93,7 +100,7 @@ public class ApiTestFixture : IAsyncLifetime
     {
         using var scope = Factory.Services.CreateScope();
         var services = scope.ServiceProvider;
-        
+
         await IdentitySeeder.SeedAdminUser(
             services,
             TestWebApplicationFactory.TestAdminEmail,
