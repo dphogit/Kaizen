@@ -7,6 +7,10 @@ on:
       - 'github/workflows/webapp-build-and-deploy.yml'
       - 'src/Kaizen.Web/**'
 
+concurrency:
+  group: ${{ github.workflow }} Production
+  cancel-in-progress: true
+  
 env:
   APP_LOCATION: 'src/Kaizen.Web'
   BUILD_LOCATION: 'src/Kaizen.Web/dist'

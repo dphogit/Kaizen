@@ -8,6 +8,8 @@ on:
       - 'src/Kaizen.API/**'
       - 'test/Kaizen.API.FunctionalTests/**'
 
+concurrency: ${{ github.workflow }} Production
+  
 env:
   AZURE_WEBAPP_NAME: 'kaizen-api-prod'
   API_PROJECT: 'src/Kaizen.API'
