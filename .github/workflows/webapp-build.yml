@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/webapp-build-and-deploy.yml'
+      - '.github/workflows/webapp-build.yml'
       - 'src/Kaizen.Web/**'
   workflow_dispatch:
 
