@@ -1,4 +1,5 @@
-﻿using Kaizen.API.Data;
+﻿using Azure.Identity;
+using Kaizen.API.Data;
 using Kaizen.API.Models;
 using Kaizen.API.Services;
 using Microsoft.AspNetCore.Identity;
@@ -11,10 +12,16 @@ public static class WebApplicationBuilderExtensions
 {
     public static WebApplicationBuilder AddKaizen(this WebApplicationBuilder builder)
     {
+        if (builder.Environment.IsProduction())
+        {
+            builder.AddKaizenAzure();
+        }
+        
         return builder.AddKaizenCors()
             .AddKaizenDatabase()
             .AddKaizenAuth()
-            .AddKaizenServices();
+            .AddKaizenServices()
+            .AddKaizenHealthCheck();
     }
 
     private static WebApplicationBuilder AddKaizenCors(this WebApplicationBuilder builder)
@@ -38,10 +45,7 @@ public static class WebApplicationBuilderExtensions
 
     private static WebApplicationBuilder AddKaizenDatabase(this WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-        if (connectionString is null)
-            throw new InvalidOperationException("No connection string is configured");
+        var connectionString = builder.Configuration.GetRequiredDbConnectionString();
 
         builder.Services.AddSqlServer<KaizenDbContext>(connectionString);
 
@@ -77,5 +81,41 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IWorkoutService, WorkoutService>();
         
         return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenHealthCheck(this WebApplicationBuilder builder)
+    {
+        var connectionString = builder.Configuration.GetRequiredDbConnectionString();
+        
+        builder.Services.AddHealthChecks()
+            .AddSqlServer(connectionString, tags: ["ready"]);
+        
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenAzure(this WebApplicationBuilder builder)
+    {
+        var vaultUriValue = builder.Configuration.GetValue<string>("Azure:KeyVaultUri");
+        
+        if (vaultUriValue is null)
+        {
+            throw new InvalidOperationException("Azure:KeyVaultUri is not configured.");
+        }
+
+        builder.Configuration.AddAzureKeyVault(new Uri(vaultUriValue), new ManagedIdentityCredential());
+
+        builder.Logging.AddAzureWebAppDiagnostics();
+
+        return builder;
+    }
+
+    private static string GetRequiredDbConnectionString(this ConfigurationManager config)
+    {
+        var connectionString = config.GetConnectionString("DefaultConnection");
+
+        if (connectionString is null)
+            throw new InvalidOperationException("No connection string is configured");
+        
+        return connectionString;
     }
 }

@@ -8,6 +8,10 @@ on:
       - 'src/Kaizen.API/**'
       - 'test/Kaizen.API.FunctionalTests/**'
 
+concurrency:
+  group: ${{ github.workflow }}@${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest

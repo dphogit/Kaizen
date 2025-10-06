@@ -1,0 +1,77 @@
+﻿name: API Build and Deploy
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/api-build-and-deploy.yml'
+      - 'src/Kaizen.API/**'
+      - 'test/Kaizen.API.FunctionalTests/**'
+
+concurrency: ${{ github.workflow }} Production
+  
+env:
+  AZURE_WEBAPP_NAME: 'kaizen-api-prod'
+  API_PROJECT: 'src/Kaizen.API'
+  PUBLISH_DIR: 'publish'
+  MIGRATIONS_SCRIPT: 'artifacts/ef-migrations-idempotent.sql'
+  BUILD_CONFIG: 'Release'
+
+jobs:
+  build-and-deploy:
+    name: Deploy API and DB to Production
+    environment: production
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET 9.0.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+          
+      - name: Install EF Tools
+        run: dotnet tool install --global dotnet-ef
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.API_PROJECT }}
+        
+      - name: Build
+        run: dotnet build ${{ env.API_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore
+        
+      # --- Database Migrations ---
+        
+      - name: Generate Idempotent SQL Migration Script
+        run: >-
+          dotnet ef migrations script
+          -p ${{ env.API_PROJECT }}
+          --configuration ${{ env.BUILD_CONFIG }}
+          --idempotent
+          -o ${{ env.MIGRATIONS_SCRIPT }}
+          
+        # Upload artifact for observability
+      - name: Upload Migration Script Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'ef-migration-sql'
+          path: ${{ env.MIGRATIONS_SCRIPT }}
+          
+      - name: Apply Migrations to Azure SQL
+        uses: azure/sql-action@v2.3
+        with:
+          path: ${{ env.MIGRATIONS_SCRIPT }}
+          connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+      
+      # --- API Deployment ---
+
+      - name: Publish
+        run: dotnet publish ${{ env.API_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-build -o ${{ env.PUBLISH_DIR }}
+      
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.PUBLISH_DIR }}

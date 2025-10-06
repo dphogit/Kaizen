@@ -1,8 +1,7 @@
 ﻿import Axios, { type AxiosError } from "axios";
 import { z } from "zod";
 
-// TODO: Set via app configuration.
-const BASE_URL = "https://localhost:8081";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const apiClient = Axios.create({
   baseURL: BASE_URL,

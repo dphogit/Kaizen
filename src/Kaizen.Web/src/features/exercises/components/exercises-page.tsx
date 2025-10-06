@@ -8,7 +8,7 @@ function ExercisesGrid(props: { exercises: Exercise[] }) {
   return (
     <Grid>
       {props.exercises.map((exercise) => (
-        <Grid.Col span={4} key={exercise.id}>
+        <Grid.Col span={6} key={exercise.id}>
           <ExerciseCard exercise={exercise} />
         </Grid.Col>
       ))}

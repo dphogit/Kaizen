@@ -15,23 +15,6 @@ public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : Identi
     public DbSet<MuscleGroup> MuscleGroups { get; set; }
     public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-
-        optionsBuilder
-            .UseSeeding((dbContext, _) =>
-            {
-                dbContext.SeedMuscleGroups();
-                dbContext.SeedMeasurementUnits();
-            })
-            .UseAsyncSeeding(async (dbContext, _, cancellationToken) =>
-            {
-                await dbContext.SeedMuscleGroupsAsync(cancellationToken);
-                await dbContext.SeedMeasurementUnitsAsync(cancellationToken);
-            });
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -44,6 +27,7 @@ public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : Identi
         {
             m.HasKey(e => e.Code);
             m.HasIndex(e => e.Name).IsUnique();
+            m.HasData(DbContextExtensions.AppMuscleGroups);
         });
 
         // Unidirectional many-to-many relationship between exercises and muscles used.
@@ -61,6 +45,7 @@ public class KaizenDbContext(DbContextOptions<KaizenDbContext> options) : Identi
         {
             e.HasKey(mu => mu.Code);
             e.HasIndex(mu => mu.Name).IsUnique();
+            e.HasData(DbContextExtensions.AppMeasurementUnits);
         });
         
         modelBuilder.Entity<WorkoutSet>(e =>
