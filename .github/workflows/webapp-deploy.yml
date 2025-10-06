@@ -1,4 +1,4 @@
-﻿# Build the application on the runner.
+# Build the application on the runner.
 # Only use azure/static-web-apps-deploy for deployment only.
 # We can control the build versions of Node, Vite, etc.
 # Refer to https://github.com/Azure/static-web-apps/issues/248
