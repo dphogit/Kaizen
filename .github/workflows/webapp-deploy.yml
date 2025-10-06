@@ -12,6 +12,7 @@ on:
     paths:
       - 'github/workflows/webapp-build-and-deploy.yml'
       - 'src/Kaizen.Web/**'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }} Production
