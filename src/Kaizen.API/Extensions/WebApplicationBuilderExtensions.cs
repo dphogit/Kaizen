@@ -14,14 +14,7 @@ public static class WebApplicationBuilderExtensions
     {
         if (builder.Environment.IsProduction())
         {
-            var vaultUriValue = builder.Configuration.GetValue<string>("Azure:KeyVaultUri");
-            
-            if (vaultUriValue is null)
-            {
-                throw new InvalidOperationException("Azure:KeyVaultUri is not configured.");
-            }
-
-            builder.Configuration.AddAzureKeyVault(new Uri(vaultUriValue), new ManagedIdentityCredential());
+            builder.AddKaizenAzure();
         }
         
         return builder.AddKaizenCors()
@@ -97,6 +90,22 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddHealthChecks()
             .AddSqlServer(connectionString, tags: ["ready"]);
         
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddKaizenAzure(this WebApplicationBuilder builder)
+    {
+        var vaultUriValue = builder.Configuration.GetValue<string>("Azure:KeyVaultUri");
+        
+        if (vaultUriValue is null)
+        {
+            throw new InvalidOperationException("Azure:KeyVaultUri is not configured.");
+        }
+
+        builder.Configuration.AddAzureKeyVault(new Uri(vaultUriValue), new ManagedIdentityCredential());
+
+        builder.Logging.AddAzureWebAppDiagnostics();
+
         return builder;
     }
 
