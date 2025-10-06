@@ -7,6 +7,7 @@ on:
       - '.github/workflows/api-build-and-deploy.yml'
       - 'src/Kaizen.API/**'
       - 'test/Kaizen.API.FunctionalTests/**'
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }} Production
   
