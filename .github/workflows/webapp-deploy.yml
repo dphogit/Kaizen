@@ -1,4 +1,10 @@
-﻿name: Web App Deploy
+﻿# Build the application on the runner.
+# Only use azure/static-web-apps-deploy for deployment only.
+# We can control the build versions of Node, Vite, etc.
+# Refer to https://github.com/Azure/static-web-apps/issues/248
+
+name: Web App Deploy
+
 on:
   push:
     branches:
@@ -12,8 +18,9 @@ concurrency:
   cancel-in-progress: true
   
 env:
-  APP_LOCATION: 'src/Kaizen.Web'
-  BUILD_LOCATION: 'src/Kaizen.Web/dist'
+  PROJECT_DIR: 'src/Kaizen.Web'
+  APP_LOCATION: 'src/Kaizen.Web/dist'
+  NODE_VERSION_FILE: 'src/Kaizen.Web/.nvmrc'
 
 jobs:
   deploy:
@@ -21,12 +28,24 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     
-    env:
-      VITE_API_URL: ${{ vars.VITE_API_URL }}
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: ${{ env.NODE_VERSION_FILE }}
+          
+      - name: Install Dependencies
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: npm install
+
+      - name: Build Web App
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: npm run build
 
       - name: Deploy to Azure Static Web App
         uses: azure/static-web-apps-deploy@v1
@@ -34,6 +53,6 @@ jobs:
           action: 'upload'
           app_location: ${{ env.APP_LOCATION }}
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          output_location: ${{ env.BUILD_LOCATION }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           skip_api_build: true
+          skip_app_build: true
