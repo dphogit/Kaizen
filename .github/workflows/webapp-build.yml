@@ -1,4 +1,5 @@
-﻿name: webapp-build.yml
+﻿name: Web App Build
+
 on:
   pull_request:
     branches:
