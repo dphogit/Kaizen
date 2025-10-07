@@ -62,7 +62,7 @@ public static class WebApplicationBuilderExtensions
         {
             options.Cookie.Name = "KaizenAuth";
             options.Cookie.HttpOnly = true;
-            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SameSite = SameSiteMode.None;
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         });
 
