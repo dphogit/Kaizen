@@ -1,4 +1,4 @@
-﻿# 🔥 Kaizen - Simple Workout Tracking
+﻿# 🔥 [Kaizen - Simple Workout Tracking](https://nice-ground-0389fcc1e.1.azurestaticapps.net/)
 
 [![Web App Deploy](https://github.com/dphogit/Kaizen/actions/workflows/webapp-deploy.yml/badge.svg)](https://github.com/dphogit/Kaizen/actions/workflows/webapp-deploy.yml)
 [![API Build and Deploy](https://github.com/dphogit/Kaizen/actions/workflows/api-build-and-deploy.yml/badge.svg)](https://github.com/dphogit/Kaizen/actions/workflows/api-build-and-deploy.yml)
